@@ -1,0 +1,3 @@
+/*
+Responsible for updating API requests in both the database and the memory 
+*/
