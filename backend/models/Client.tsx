@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { iClient } from "../interfaces";
-import { torrentSchema } from "./Torrent";
 const clientSchema = new mongoose.Schema<iClient>({
     name: String,
     randId: String,
@@ -11,7 +10,6 @@ const clientSchema = new mongoose.Schema<iClient>({
     peerId: String,
     availableUpload: Number,
     availableDownload: Number,
-    torrents: [torrentSchema] // Using the torrentSchema as a sub-document
 });
 
 // Create a Mongoose model for iClient

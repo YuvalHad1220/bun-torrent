@@ -19,6 +19,7 @@ const decode = (arrayBuffer: ArrayBuffer) : iTorrent => {
     const asBuffer = Buffer.from(arrayBuffer);
     const decoded = bencodec.decode(asBuffer) as iDecodedTorrentFile;
     return {
+        _id: null,
         name: decoded.info.name.toString(),
         size: getSizeInBytes(decoded),
         seeders: 0,
@@ -33,7 +34,8 @@ const decode = (arrayBuffer: ArrayBuffer) : iTorrent => {
         downloaded: 0,
         uploaded: 0,
         tempTakenDownload: 0,
-        tempTakenUpload: 0
+        tempTakenUpload: 0,
+        clientId: null
     }
 }
 

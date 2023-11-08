@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import { iTorrent } from "../interfaces";
 
 export const torrentSchema = new mongoose.Schema<iTorrent>({
+    clientId: {
+        required: true,
+        type: mongoose.Types.ObjectId
+    },
     name: String,
     size: Number,
     seeders: Number,
