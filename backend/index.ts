@@ -69,8 +69,8 @@ const main = async () => {
     app.listen(8080);
     console.log("up and running");
     while (true) {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // do that
-        console.log("hello");
+        await new Promise((resolve) => setTimeout(resolve, 30)); // do that
+        await registerLoop(db);
     }
     
 

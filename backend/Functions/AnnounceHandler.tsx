@@ -37,5 +37,9 @@ export default async (announcementType: announceType, torrent: iTorrent, client:
     headers: payload.headers,
     });
 
+    // if torrent is done, and we dont have anyone to seed to twice in a row - theres no need to save to db ( becasue we know the upload didnt change )
+    // if torrent is not done but theres no one to download from  twice in a row - theres no need to save to the db (because we know that the download didnt change)
+    if (announcementType === "resume" && (torrent.isFinishAnnounced && torrent.leechers === 0 && prevState.leechers === 0 || torrent.seeders === 0 && prevState.seeders === 0))
+        return false;
     return true;
 }
