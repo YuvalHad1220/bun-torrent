@@ -3,9 +3,10 @@ import DatabaseHandler from './Functions/DatabaseHandler';
 import { iTorrent, iDatabaseHandler, iClient, announceType } from './interfaces';
 import AnnounceHandler from './Functions/AnnounceHandler';
 
-// will determine weather a torrent needs to be updated. if it has no seeders \ leechers or our download\upload speed is at 0 then theres no need to save it into the db
+// if we change our upload \ download then we need to save the updated state to the database; else, it means that we dont download\upload and we didnt change state so we dont save to db. 
+// any changes that happen because of announcement will already be saved to the db on announcement
 const needsToBeSaved = (torrent: iTorrent) : boolean => {
-    return true;
+    return torrent.tempTakenDownload > 0 || torrent.tempTakenUpload > 0;
 }
 
 const registerLoop = async (db: iDatabaseHandler) => {
