@@ -1,4 +1,3 @@
-import { t } from 'elysia'
 export interface iTorrent {
     name: string,
     size: number,
@@ -45,9 +44,3 @@ export interface iDecodedTorrentFile {
     // Add any additional properties you may have in your decoded torrent file
 }
 
-// elysia Schemas
-export const clientPayload = {
-        body: t.Object({
-        clientName: t.String(),
-        
-    })}
