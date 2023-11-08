@@ -1,6 +1,12 @@
 import { announceType, iAnnounceRequest, iClient, iTorrent } from "../interfaces";
 
-export default async (announcementType: announceType, torrent: iTorrent, client: iClient) => {
+export default async (announcementType: announceType, torrent: iTorrent, client: iClient) : Promise<boolean> => {
+
+    const prevState = {
+        seeders: torrent.seeders,
+        leechers: torrent.leechers
+    };
+
     const payload: iAnnounceRequest= {
         headers: {
             "Accept-Encoding": "gzip",
@@ -31,5 +37,5 @@ export default async (announcementType: announceType, torrent: iTorrent, client:
     headers: payload.headers,
     });
 
-    console.log(result.body);
+    return true;
 }
