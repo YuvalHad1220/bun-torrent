@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia'
 import DatabaseHandler from './Functions/DatabaseHandler';
 import { iTorrent, iDatabaseHandler, iClient, announceType } from './interfaces';
 import AnnounceHandler from './Functions/AnnounceHandler';
+import cors from '@elysiajs/cors';
 
 // if we change our upload \ download then we need to save the updated state to the database; else, it means that we dont download\upload and we didnt change state so we dont save to db. 
 // any changes that happen because of announcement will already be saved to the db on announcement
@@ -65,7 +66,20 @@ const registerLoop = async (db: iDatabaseHandler) => {
 
 const main = async () => {
     const db = await DatabaseHandler(process.env.REMOTE_DB!);
-    const app = new Elysia().decorate("dbHandler", db);    
+    // const app = new Elysia().decorate("dbHandler", db);
+    const app = new Elysia();
+    app.use(cors());
+    app.group("/client", app =>
+    app.get("/", async handler => {
+        return await db.getClients();
+    })
+    .post("/", async handler => {
+        const client = handler.body as iClient;
+        const res = await db.addClient(client);
+        console.log(res);
+        return {success: res};
+    })
+    ) 
     app.listen(8080);
     console.log("up and running");
     while (true) {

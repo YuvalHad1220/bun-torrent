@@ -5,7 +5,6 @@ import { ClientModel } from '../models/Client';
 
 
 export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
-
     await mongoose.connect(connectionUri);
     let clients = await ClientModel.find().lean() as iClient[];
     let torrents = await TorrentModel.find().lean() as iTorrent[];
@@ -48,25 +47,31 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
     };
 
     const addClient = async (client: iClient) => {
+        client._id = new mongoose.Types.ObjectId();
         const clientItem = new ClientModel(client);
         try {
             await clientItem.save();
+            clients.push(client);
             return true;
         }
 
         catch (err) {
+            client._id = null;
             return false;
         }
         
     }
     const addTorrent = async (torrent: iTorrent) => {
+        torrent._id = new mongoose.Types.ObjectId();
         const torrentItem = new TorrentModel(torrent);
         try {
             await torrentItem.save();
+            torrents.push(torrent);
             return true;
         }
 
         catch (err) {
+            torrent._id = null;
             return false;
         }
         
