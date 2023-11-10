@@ -88,3 +88,9 @@ export interface iDecodedAnnounce {
     complete: number,
     incomplete: number,
 }
+
+export interface iClientRaw {
+    name: string,
+    peerID: string,
+    "User-Agent": string
+}
