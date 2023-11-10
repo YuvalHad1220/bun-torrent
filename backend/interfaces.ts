@@ -39,7 +39,7 @@ export interface iDecodedTorrentFile {
         pieceLength: number,
         pieces: Buffer,
         name: Buffer,
-        length?: Buffer, // Optional for single file torrents
+        length?: number, // Optional for single file torrents
         files?: {
             path: Buffer,
             length: number
@@ -50,7 +50,7 @@ export interface iDecodedTorrentFile {
 
 export interface iDatabaseHandler {
     addClient: (client: iClient) => Promise<boolean>,
-    addTorrent: (torrent: iTorrent) => Promise<boolean>,
+    addTorrents: (torrents: iTorrent[]) => Promise<boolean>,
     getClients: (id? : mongoose.Types.ObjectId) => Promise<iClient[]>,
     getTorrents: (id? : mongoose.Types.ObjectId) => Promise<iTorrent[]>,
     deleteTorrent: (id : mongoose.Types.ObjectId) => Promise<boolean>,
@@ -66,6 +66,7 @@ export interface iAnnounceRequest {
     headers: {
         "Accept-Encoding": "gzip",
         "User-Agent": string,
+        "Content-Type": "application/x-www-form-urlencoded"
     },
     params: {
         info_hash: string,

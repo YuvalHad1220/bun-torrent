@@ -3,7 +3,8 @@ import DatabaseHandler from './Functions/DatabaseHandler';
 import { iTorrent, iDatabaseHandler, iClient, announceType } from './interfaces';
 import AnnounceHandler from './Functions/AnnounceHandler';
 import cors from '@elysiajs/cors';
-
+import decodeTorrentFile from './Functions/ParseTorrentFile';
+import mongoose from 'mongoose';
 // if we change our upload \ download then we need to save the updated state to the database; else, it means that we dont download\upload and we didnt change state so we dont save to db. 
 // any changes that happen because of announcement will already be saved to the db on announcement
 const needsToBeSaved = (torrent: iTorrent) : boolean => {
@@ -22,14 +23,17 @@ const registerLoop = async (db: iDatabaseHandler) => {
     const torrentQueueToSave = new Set<iTorrent>();
 
     const announceSaveAdapter = async (announcementType: announceType, torrent: iTorrent, client: iClient) => {
+        console.log("going to announce")
         const announceResult = await AnnounceHandler(announcementType, torrent, client);
+        console.log(announceResult);
         if (announceResult)
             announcedTorrentsToSave.add(torrent);
     };
 
     // main loop
     torrents.forEach(torrent => {
-        const client = clients.find(client => client._id === torrent._id);
+        // console.log(torrent)
+        const client = clients.find(client => client._id?.equals(torrent.clientId));
         if (!client)
             return;
 
@@ -69,22 +73,59 @@ const main = async () => {
     // const app = new Elysia().decorate("dbHandler", db);
     const app = new Elysia();
     app.use(cors());
-    app.group("/client", app =>
-    app.get("/", async handler => {
+    app.group("/api/client", app =>
+    app.get("/", async () => {
         return await db.getClients();
     })
     .post("/", async handler => {
         const client = handler.body as iClient;
         const res = await db.addClient(client);
-        console.log(res);
         return {success: res};
     })
-    ) 
+    .get("/fromGithub", handler => {
+
+    })
+    )
+
+    .group("/api/torrent", app => 
+    app.get("/", async () => {
+        return await db.getTorrents();
+    })
+    .post("/", async handler => {
+        interface requestPayload {
+            files: Blob[] | Blob,
+            maxDownloadSpeedInBytes: string,
+            maxUploadSpeedInBytes: string,
+            clientId: string, 
+            progress: string
+        }
+        const payload = handler.body as requestPayload;
+        if (!Array.isArray(payload.files))
+            payload.files = [payload.files]
+
+        const clientId = new mongoose.Types.ObjectId(payload.clientId);
+        if (!(await db.getClients()).some(client => client._id?.equals(clientId)))
+            return {success: false};
+
+        const tasks = payload.files.map(file => file.arrayBuffer());
+        const torrentsAsArrayBuffer = await Promise.all(tasks);
+        const torrents = torrentsAsArrayBuffer.map(decodeTorrentFile);        
+        torrents.forEach(torrent => {
+            torrent.maxDownloadSpeed = parseInt(payload.maxDownloadSpeedInBytes);
+            torrent.maxUploadSpeed = parseInt(payload.maxUploadSpeedInBytes);
+            torrent.downloaded = Math.floor(parseInt(payload.progress) / 100 * torrent.size);
+            torrent.clientId = clientId;
+        });
+
+        const result = await db.addTorrents(torrents);
+        return {success: result};
+    }))
     app.listen(8080);
     console.log("up and running");
     while (true) {
-        await new Promise((resolve) => setTimeout(resolve, 30)); // do that
         await registerLoop(db);
+        await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // do that for 30 seconds
+
     }
     
 

@@ -8,6 +8,8 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
     await mongoose.connect(connectionUri);
     let clients = await ClientModel.find().lean() as iClient[];
     let torrents = await TorrentModel.find().lean() as iTorrent[];
+    // conversion when fetching from mongodb
+    torrents.forEach(torrent => torrent.infoHash = Buffer.from(torrent.infoHash.buffer))
 
     const getClients = async (_id?: mongoose.Types.ObjectId) => {
         if (_id) {
@@ -61,20 +63,29 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
         }
         
     }
-    const addTorrent = async (torrent: iTorrent) => {
-        torrent._id = new mongoose.Types.ObjectId();
-        const torrentItem = new TorrentModel(torrent);
-        try {
-            await torrentItem.save();
-            torrents.push(torrent);
-            return true;
-        }
 
-        catch (err) {
-            torrent._id = null;
-            return false;
-        }
-        
+    // can optimizie further
+    const addTorrents = async (newTorrents: iTorrent[]) => {
+        const tasks = newTorrents.map(async torrent => {
+            if (torrents.some(existingTorrent => existingTorrent.infoHash.compare(torrent.infoHash))){
+                return true;
+            }
+            torrent._id = new mongoose.Types.ObjectId();
+            const torrentItem = new TorrentModel(torrent);
+            try {
+                await torrentItem.save();
+                torrents.push(torrent);
+                return true;
+            }
+    
+            catch (err) {
+                torrent._id = null;
+                return false;
+            }
+        })
+
+        const results = await Promise.all(tasks);
+        return !results.some(res => !res);
     }
-    return {addClient,addTorrent, getClients, getTorrents, deleteTorrent, deleteClient, updateTorrents};
+    return {addClient,addTorrents, getClients, getTorrents, deleteTorrent, deleteClient, updateTorrents};
 }

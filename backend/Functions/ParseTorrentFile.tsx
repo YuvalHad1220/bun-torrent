@@ -1,18 +1,19 @@
-import bencodec from 'bencodec';
+import bencodec, { encode } from 'bencodec';
 import { iDecodedTorrentFile, iTorrent } from '../interfaces';
 
 const getSizeInBytes = (decoded: iDecodedTorrentFile): number => {
     const files = decoded.info.files;
+    // console.log(decoded.info.length);
     // could never possibly be undefined
     if (!files)
-        return decoded.info.length!.readUint32LE();
+        return decoded.info.length!;
 
     return files.map(file => file.length).reduce((acc, length) => acc + length, 0);
 
 }
-const getHash = (fileBuffer: Buffer) : Buffer => {
+const getHash = (decoded: iDecodedTorrentFile) : Buffer => {
     const hasher = new Bun.CryptoHasher("sha1");
-    return Buffer.from(hasher.update(fileBuffer).digest().buffer);
+    return Buffer.from(hasher.update(encode(decoded.info)).digest().buffer);
 }
 
 const decode = (arrayBuffer: ArrayBuffer) : iTorrent => {
@@ -30,7 +31,7 @@ const decode = (arrayBuffer: ArrayBuffer) : iTorrent => {
         isFinishAnnounced: false,
         announceUrl: decoded.announce.toString(),
         timeToAnnounce: 0,
-        infoHash: getHash(asBuffer),
+        infoHash: getHash(decoded),
         downloaded: 0,
         uploaded: 0,
         tempTakenDownload: 0,
