@@ -1,4 +1,5 @@
-import { Elysia, t } from 'elysia'
+import { Elysia } from 'elysia';
+import { logger } from '@bogeychan/elysia-logger';
 import DatabaseHandler from './Functions/DatabaseHandler';
 import { iTorrent, iDatabaseHandler, iClient, announceType } from './interfaces';
 import AnnounceHandler from './Functions/AnnounceHandler';
@@ -74,6 +75,9 @@ const main = async () => {
     const app = new Elysia();
     torrentGroup(app, db);
     clientsGroup(app, db);
+    app.use(logger({
+        level: "debug"
+    }))
     app.use(cors());
     
     app.listen(8080);
