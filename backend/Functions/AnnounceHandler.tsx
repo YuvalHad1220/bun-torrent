@@ -19,28 +19,23 @@ const convert = (infoHashAsHex: string) => {
 }
 
 export default async (announcementType: announceType, torrent: iTorrent, client: iClient) : Promise<boolean> => {
-    const prevState = {
-        seeders: torrent.seeders,
-        leechers: torrent.leechers
-    };
 
     const payload: iAnnounceRequest= {
         headers: {
             "Accept-Encoding": "gzip",
             "User-Agent": client.userAgent,
-            "Content-Type": "application/x-www-form-urlencoded"
         },
         params: {
-            info_hash: torrent.infoHash,
+            info_hash: torrent.infoHash.toString(),
             peer_id: client.peerId+client.randId,
-            port: client.port,
-            uploaded: torrent.uploaded,
-            downloaded: torrent.downloaded,
-            left: torrent.size - torrent.downloaded,
-            compact: 1,
-            numwant: 200,
-            supportcrypto: 1,
-            no_peer_id: 1,
+            port: client.port.toString(),
+            uploaded: torrent.uploaded.toString(),
+            downloaded: torrent.downloaded.toString(),
+            left: (torrent.size - torrent.downloaded).toString(),
+            compact: "1",
+            numwant: "200",
+            supportcrypto: "1",
+            no_peer_id: "1",
         }
     };
 
@@ -68,7 +63,7 @@ export default async (announcementType: announceType, torrent: iTorrent, client:
         return encoded
       }
     const url = new URL(torrent.announceUrl);
-    url.searchParams.append("info_hash", urlEncodeBytes(payload.params.info_hash));
+    url.searchParams.append("info_hash", payload.params.info_hash);
     url.searchParams.append("peer_id", payload.params.peer_id);
     url.searchParams.append("port", payload.params.port);
     url.searchParams.append("uploaded", payload.params.uploaded);
@@ -79,12 +74,12 @@ export default async (announcementType: announceType, torrent: iTorrent, client:
     url.searchParams.append("supportcrypto", payload.params.supportcrypto);
     url.searchParams.append("no_peer_id", payload.params.no_peer_id);
     
-    console.log(url);
     
     try {
-        const result = await fetch(url.href, {
+        const result = await fetch(url, {
             method: "GET",
             headers: payload.headers,
+            
             });
         
         console.log(result);
@@ -100,6 +95,7 @@ export default async (announcementType: announceType, torrent: iTorrent, client:
     }
 
     catch (err) {
+        console.log(err.message);
         return false;
     }
 

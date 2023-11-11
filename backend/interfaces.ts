@@ -64,21 +64,20 @@ type ExcludeResume = Exclude<announceType, "resume">;
 
 export interface iAnnounceRequest {
     headers: {
-        "Accept-Encoding": "gzip",
+        "Accept-Encoding": string,
         "User-Agent": string,
-        "Content-Type": "application/x-www-form-urlencoded"
     },
     params: {
         info_hash: string,
         peer_id: string,
-        port: number,
-        uploaded: number,
-        downloaded: number,
-        left: number,
-        compact: 1,
-        numwant: 200,
-        supportcrypto: 1,
-        no_peer_id: 1,
+        port: string,
+        uploaded: string,
+        downloaded: string,
+        left: string,
+        compact: string,
+        numwant: string,
+        supportcrypto: string,
+        no_peer_id: string,
         event?: ExcludeResume
     }
 }
