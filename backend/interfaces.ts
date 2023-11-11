@@ -88,3 +88,10 @@ export interface iDecodedAnnounce {
     complete: number,
     incomplete: number,
 }
+
+
+export interface iGithubClientList {
+    "Name": string,
+    "peerID": string,
+    "User-Agent": string
+}

@@ -1,4 +1,4 @@
-import { iClient} from "../../interfaces";
+import { iClient, iGithubClientList} from "../../interfaces";
 export const getClients = async (): Promise<iClient[]> => {
     try {
         const response = await fetch('/api/client/', {
@@ -10,6 +10,7 @@ export const getClients = async (): Promise<iClient[]> => {
         return await response.json();
     }
     catch (err) {
+      console.log(err.message)
         return [];
     }
 }
@@ -26,9 +27,11 @@ export const postClient = async (client: iClient): Promise<boolean> => {
         return response.ok;
     }
     catch (err) {
+      console.log(err.message);
         return false;
     }
-};
+}
+
 export const postTorrents = async (files: FileList, maxDownloadSpeedInBytes: number, maxUploadSpeedInBytes: number, clientId: string, progress: number): Promise<boolean> => {
     try {
         // Create a FormData object
@@ -57,9 +60,28 @@ export const postTorrents = async (files: FileList, maxDownloadSpeedInBytes: num
         return response.ok;
       } catch (err) {
         // Handle fetch errors here
-        console.error('Fetch error:', err);
+        console.error('Fetch error:', err.message);
         return false;
       }
 
 }
 
+export const getGithubClients = async (): Promise<iGithubClientList[]> => {
+  try {
+    const response = await fetch("/api/client/fromGithub", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const results = await response.json();
+    if (!results){
+      throw new Error("error in parsing");
+    }
+    
+    return results;
+  } catch (err) {
+    console.log(err.message);
+    return [];
+  }
+};

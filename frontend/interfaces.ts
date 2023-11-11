@@ -89,8 +89,8 @@ export interface iDecodedAnnounce {
     incomplete: number,
 }
 
-export interface iClientRaw {
-    name: string,
-    peerID: string,
+export interface iGithubClientList {
+    "Name": string,
+    "peerID": string,
     "User-Agent": string
 }

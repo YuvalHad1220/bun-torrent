@@ -1,17 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { iClient } from "../interfaces";
+import { iClient, iGithubClientList } from "../interfaces";
 import { SubmitHandler } from "react-hook-form";
-import { postClient } from "./assets/RequestsHandler";
+import { getGithubClients, postClient } from "./assets/RequestsHandler";
 
 
-const clients = [{"Name": "qBittorrent 4.4.5",
-"peerID": "-qB4450-",
-"User-Agent": "qBittorrent/4.4.5"
-},
-{"Name": "qBittorrent 4.3.1",
-"peerID": "-qB4310-",
-"User-Agent": "qBittorrent/4.3.1"}]
 const generateId = () => {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -35,8 +28,15 @@ type FormInputs = {
 
 const ClientForm = () => {
     const [wasSent, setIsSent] = useState(false);
-    const { register,handleSubmit,reset, setError, formState: { errors }} = useForm<FormInputs>()
-  
+    const [clients, setClients] = useState<iGithubClientList[]>([]);
+
+    const { register, handleSubmit, reset, setError, formState: { errors }} = useForm<FormInputs>()
+
+    useEffect(() => {
+      getGithubClients()
+      .then(setClients)
+    }, [])
+    
     const onSubmit: SubmitHandler<FormInputs> = (data) => {
       const client = clients.find(client => client.Name === data.selectedName);
       if (!client) {
