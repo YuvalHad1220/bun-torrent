@@ -24,7 +24,7 @@ function App() {
   return (
     <div className="grid grid-cols-5 h-screen gap-3 p-3">
       <div className="col-span-4 rounded-2xl shadow-2xl bg-base-300 h-full p-3">
-        {isDisplayTorrent ? <TorrentForm /> : <ClientTable />}
+        {isDisplayTorrent ? <TorrentForm /> : <ClientForm />}
       </div>
       <div className="col-span-1 rounded-2xl shadow-2xl bg-base-300 h-full flex flex-col">
         {displayTableSections}

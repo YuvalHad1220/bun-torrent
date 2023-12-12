@@ -26,9 +26,10 @@ const registerLoop = async (db: iDatabaseHandler) => {
     const announceSaveAdapter = async (announcementType: announceType, torrent: iTorrent, client: iClient) => {
         console.log("going to announce")
         const announceResult = await AnnounceHandler(announcementType, torrent, client);
-        console.log(announceResult);
-        if (announceResult)
+        if (announceResult){
+            console.log("announce success")
             announcedTorrentsToSave.add(torrent);
+        }
     };
 
     // main loop
@@ -84,7 +85,7 @@ const main = async () => {
     console.log("up and running");
     while (true) {
         await registerLoop(db);
-        await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // do that for 30 seconds
+        await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // do that once every 30 seconds
 
     }
     

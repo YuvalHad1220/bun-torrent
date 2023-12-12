@@ -42,12 +42,22 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
         return false;
     };
 
-    const updateTorrents = async (torrents: Set<iTorrent>) => {
-        const asArray = Array.from(torrents);
-        const result = await TorrentModel.updateMany({_id: {$in: asArray.map(torrent => torrent._id)}}, asArray);
-        return result.acknowledged;
-    };
+    // const updateTorrents = async (torrents: Set<iTorrent>) => {
+    //     const asArray = Array.from(torrents);
+    //     const result = await TorrentModel.updateMany({_id: {$in: asArray.map(torrent => torrent._id)}}, {$set: asArray});
+    //     console.log(result)
+    //     return result.acknowledged;
+    // };
 
+    const updateTorrents = async (torrents: Set<iTorrent>) => {
+        const tasks = Array.from(torrents).map(async torrent => {
+            return await TorrentModel.updateOne({_id: torrent._id}, {$set: torrent})
+        });
+
+        const results = await Promise.all(tasks);
+
+        return !results.some(res => !res.acknowledged)
+    }
     const addClient = async (client: iClient) => {
         client._id = new mongoose.Types.ObjectId();
         const clientItem = new ClientModel(client);
