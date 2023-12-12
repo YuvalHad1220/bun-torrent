@@ -82,11 +82,11 @@ const main = async () => {
     
     app.listen(8080);
     console.log("up and running");
-    // while (true) {
-    //     await registerLoop(db);
-    //     await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // do that for 30 seconds
+    while (true) {
+        await registerLoop(db);
+        await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // do that for 30 seconds
 
-    // }
+    }
     
 
 }
