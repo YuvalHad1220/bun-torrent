@@ -9,13 +9,7 @@ export default {
   },
   plugins: [require("daisyui")],
   daisyui: {
-    themes: [{
-      dark: {
-        ...require("daisyui/src/theming/themes")["[data-theme=dark]"],
-        // "base-100": "#272829"
-      }
-    }]
-
+    themes: ["dark"]
   }
 }
 

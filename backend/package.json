@@ -9,9 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@bogeychan/elysia-logger": "^0.0.13",
     "@elysiajs/cors": "^0.7.1",
-    "axios": "^1.6.2",
     "bencodec": "^3.0.1",
     "elysia": "^0.7.21",
     "mongoose": "^8.0.0"

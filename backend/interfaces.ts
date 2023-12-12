@@ -29,8 +29,6 @@ export interface iClient {
     uploadLimit: number,  // Limit in Bytes at how much client can upload
     downloadLimit: number,  // Limit in Bytes at how much client can download
     peerId: string,  // A peer ID which is originated in the ORIGINAL torrent client. Example for one: -AZ3020-
-    availableUpload: number,  // How much upload bandwidth is available in Bytes
-    availableDownload: number,  // How much upload bandwidth is available in Bytes
 }
 
 export interface iDecodedTorrentFile {
@@ -94,4 +92,21 @@ export interface iGithubClientList {
     "Name": string,
     "peerID": string,
     "User-Agent": string
+}
+
+
+export interface iReducedTorrent {
+    timeToAnnounce: number,
+    isFinishAnnounced: boolean, 
+    isStartAnnounced: boolean, 
+    name: string, 
+    downloaded: number, 
+    uploaded: number, 
+    tempTakenDownload: number, 
+    seeders: number,
+    leechers: number, 
+    tempTakenUpload: number, 
+    maxDownloadSpeed: number, 
+    size: number, 
+    maxUploadSpeed: number
 }

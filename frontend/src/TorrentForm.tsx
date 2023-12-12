@@ -14,6 +14,8 @@ type FormData = {
 
 const TorrentForm = () => {
     const [wasSent, setIsSent] = useState(false);
+    const [clients, setClients] = useState<iClient[]>([]);
+
     const {
         register,
         handleSubmit,
@@ -23,11 +25,11 @@ const TorrentForm = () => {
         defaultValues: {
             uploadSpeed: 0,
             downloadSpeed: 128000, // 125KBs
-            progress: 0
+            progress: 0,
+            clientName: clients.length ? clients[0].name : ""
         }
       });
 
-    const [clients, setClients] = useState<iClient[]>([]);
 
     const onSubmit: SubmitHandler<FormData> = async (data) => {
         const client = clients.find(client => client.name === data.clientName);

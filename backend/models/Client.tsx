@@ -8,8 +8,6 @@ const clientSchema = new mongoose.Schema<iClient>({
     uploadLimit: Number,
     downloadLimit: Number,
     peerId: String,
-    availableUpload: Number,
-    availableDownload: Number,
 });
 
 // Create a Mongoose model for iClient

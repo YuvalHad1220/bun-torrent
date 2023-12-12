@@ -59,29 +59,26 @@ export interface iDatabaseHandler {
 }
 
 export type announceType = "started" | "completed" | "resume";
-type ExcludeResume = Exclude<announceType, "resume">;
 
-
-export interface iAnnounceRequest {
-    headers: {
-        "Accept-Encoding": "gzip",
-        "User-Agent": string,
-    },
-    params: {
-        info_hash: string,
-        peer_id: string,
-        port: number,
-        uploaded: number,
-        downloaded: number,
-        left: number,
-        compact: 1,
-        numwant: 200,
-        supportcrypto: 1,
-        no_peer_id: 1,
-        event?: ExcludeResume
-    }
-}
-
+// export interface iAnnounceRequest {
+//     headers: {
+//         "Accept-Encoding": "gzip",
+//         "User-Agent": string,
+//     },
+//     params: {
+//         info_hash: string,
+//         peer_id: string,
+//         port: number,
+//         uploaded: number,
+//         downloaded: number,
+//         left: number,
+//         compact: 1,
+//         numwant: 200,
+//         supportcrypto: 1,
+//         no_peer_id: 1,
+//         event?: ExcludeResume
+//     }
+// }
 
 export interface iDecodedAnnounce {
     interval: number,
@@ -93,4 +90,21 @@ export interface iGithubClientList {
     "Name": string,
     "peerID": string,
     "User-Agent": string
+}
+
+export interface iReducedTorrent {
+    clientName: string, 
+    timeToAnnounce: number,
+    isFinishAnnounced: boolean, 
+    isStartAnnounced: boolean, 
+    name: string, 
+    downloaded: number, 
+    uploaded: number, 
+    tempTakenDownload: number, 
+    seeders: number,
+    leechers: number, 
+    tempTakenUpload: number, 
+    maxDownloadSpeed: number, 
+    size: number, 
+    maxUploadSpeed: number
 }

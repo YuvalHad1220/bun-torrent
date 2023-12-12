@@ -13,7 +13,7 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
 
     const getClients = async (_id?: mongoose.Types.ObjectId) => {
         if (_id) {
-            return clients.filter(client => client._id === _id);
+            return clients.filter(client => client._id?.equals(_id));
         }
         return clients;
 
@@ -50,8 +50,17 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
     // };
 
     const updateTorrents = async (torrents: Set<iTorrent>) => {
+        console.log("torrents to update:", torrents.size)
         const tasks = Array.from(torrents).map(async torrent => {
-            return await TorrentModel.updateOne({_id: torrent._id}, {$set: torrent})
+            return await TorrentModel.updateOne({_id: torrent._id}, {$set: {
+                uploaded: torrent.uploaded,
+                downloaded: torrent.downloaded, 
+                isStartAnnounced: torrent.isStartAnnounced,
+                isFinishAnnounced: torrent.isFinishAnnounced,
+                seeders: torrent.seeders,
+                leechers: torrent.leechers,
+                timeToAnnounce: torrent.timeToAnnounce
+            }})
         });
 
         const results = await Promise.all(tasks);
@@ -77,7 +86,7 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
     // can optimizie further
     const addTorrents = async (newTorrents: iTorrent[]) => {
         const tasks = newTorrents.map(async torrent => {
-            if (torrents.some(existingTorrent => existingTorrent.infoHash.compare(torrent.infoHash))){
+            if (torrents.some(existingTorrent => existingTorrent.infoHash.compare(torrent.infoHash) === 0)){
                 return true;
             }
             torrent._id = new mongoose.Types.ObjectId();
@@ -89,6 +98,7 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
             }
     
             catch (err) {
+                console.log(err);
                 torrent._id = null;
                 return false;
             }

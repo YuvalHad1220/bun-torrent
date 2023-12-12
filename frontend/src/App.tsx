@@ -3,34 +3,47 @@ import ClientForm from "./ClientForm.tsx";
 import { useState } from "react";
 import classNames from "classnames";
 import ClientTable from "./ClientTable.tsx";
+import TorrentTable from "./TorrentTable.tsx";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 function App() {
-  const [isDisplayTorrent, setIsDisplayTorrent] = useState(true);
+  type DISPLAYABLES = "TORRENT_FORM" | "TORRENT_TABLE" | "CLIENT_FORM" | "CLIENT_TABLE"
+  const [displayed, setDisplayed] = useState<DISPLAYABLES>("TORRENT_TABLE");
+  const queryClient = new QueryClient()
 
   const addSections = (
     <div className="flex flex-col gap-3 p-2 mt-auto">
-      <button onClick={() => setIsDisplayTorrent(true)} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': isDisplayTorrent })}>Add Torrents</button>
-      <button onClick={() => setIsDisplayTorrent(false)} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': !isDisplayTorrent })}>Add Client</button>
+      <button onClick={() => setDisplayed("TORRENT_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "TORRENT_FORM" })}>Add Torrents</button>
+      <button onClick={() => setDisplayed("CLIENT_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "CLIENT_FORM" })}>Add Client</button>
     </div>
   );
 
   const displayTableSections = (
     <div className="flex flex-col gap-3 p-2 mb-auto">
-      <button onClick={() => setIsDisplayTorrent(true)} className={classNames('btn', 'rounded-2xl', 'hover:bg-primary-focus', { 'btn-primary': isDisplayTorrent })}>Show Torrents Table</button>
-      <button onClick={() => setIsDisplayTorrent(false)} className={classNames('btn', 'rounded-2xl', 'hover:bg-primary-focus', { 'btn-primary': !isDisplayTorrent })}>Show Client Table</button>
+      <button onClick={() => setDisplayed("TORRENT_TABLE")} className={classNames('btn', 'rounded-2xl', 'hover:bg-primary-focus', { 'btn-primary': displayed === "TORRENT_TABLE" })}>Torrents</button>
+      <button onClick={() => setDisplayed("CLIENT_TABLE")} className={classNames('btn', 'rounded-2xl', 'hover:bg-primary-focus', { 'btn-primary': displayed === "CLIENT_TABLE" })}>Clients</button>
     </div>
   );
 
+  const componentMap: Record<DISPLAYABLES, React.ReactNode> = {
+    "TORRENT_FORM": <TorrentForm />,
+    "TORRENT_TABLE": <TorrentTable />,
+    "CLIENT_FORM": <ClientForm />,
+    "CLIENT_TABLE": <ClientTable />,
+};
+
   return (
-    <div className="grid grid-cols-5 h-screen gap-3 p-3">
-      <div className="col-span-4 rounded-2xl shadow-2xl bg-base-300 h-full p-3">
-        {isDisplayTorrent ? <TorrentForm /> : <ClientForm />}
+    <QueryClientProvider client={queryClient}>
+      <div className="grid grid-cols-5 h-screen gap-3 p-3">
+        <div className="col-span-4 rounded-2xl shadow-2xl bg-base-300 h-full p-3">
+          {componentMap[displayed]}
+        </div>
+        <div className="col-span-1 rounded-2xl shadow-2xl bg-base-300 h-full flex flex-col">
+          {displayTableSections}
+          {addSections}
+        </div>
       </div>
-      <div className="col-span-1 rounded-2xl shadow-2xl bg-base-300 h-full flex flex-col">
-        {displayTableSections}
-        {addSections}
-      </div>
-    </div>
+    </QueryClientProvider>
 
   )
 }

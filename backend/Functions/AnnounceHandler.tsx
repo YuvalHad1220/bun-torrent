@@ -1,32 +1,9 @@
 import { decode } from "bencodec";
-import { announceType, iAnnounceRequest, iClient, iDecodedAnnounce, iTorrent } from "../interfaces";
-import axios from "axios";
+import { announceType, iClient, iDecodedAnnounce, iTorrent } from "../interfaces";
 
 
 export default async (announcementType: announceType, torrent: iTorrent, client: iClient) : Promise<boolean> => {
-    const payload: iAnnounceRequest= {
-        headers: {
-            "Accept-Encoding": "gzip",
-            "User-Agent": client.userAgent,
-        },
-        params: {
-            info_hash: encodeURIComponent(torrent.infoHash.toString("binary")),
-            peer_id: client.peerId+client.randId,
-            port: client.port.toString(),
-            uploaded: torrent.uploaded.toString(),
-            downloaded: torrent.downloaded.toString(),
-            left: (torrent.size - torrent.downloaded).toString(),
-            compact: "1",
-            numwant: "200",
-            supportcrypto: "1",
-            no_peer_id: "1",
-        }
-    };
 
-
-    if (announcementType === "completed" || announcementType === "started"){
-        payload.params.event = announcementType;
-    }
     const query = '?info_hash=' + escape(torrent.infoHash.toString('binary')) +
     '&peer_id=' + escape(client.peerId) +
     '&port=' + client.port +
@@ -35,7 +12,7 @@ export default async (announcementType: announceType, torrent: iTorrent, client:
     '&left=' + (torrent.size - torrent.downloaded) +
     '&compact=1' +
     '&numwant=200' +
-    '&event=' + payload.params.event || 'empty';
+    '&event=' + announcementType || 'empty';
 
 
     const url = torrent.announceUrl + query;
@@ -51,31 +28,25 @@ export default async (announcementType: announceType, torrent: iTorrent, client:
           return false;
 
         const decoded = decode(Buffer.from(await response.arrayBuffer()));
-        interface iAnnounceResponse {
-            complete: number,
-            incomplete: number,
-            interval: number,
-            peers: any[]
-        }
 
-        const resp = decoded as iAnnounceResponse;
+        const resp = decoded as iDecodedAnnounce;
+        if (!resp.interval)
+            return false;
 
-        torrent.timeToAnnounce = resp.interval;
+        torrent.timeToAnnounce = resp.interval || 1800;
+        torrent.seeders = resp.complete || 0;
+        torrent.leechers = resp.incomplete || 0;
 
         if (announcementType === "started")
             torrent.isStartAnnounced = true;
         if (announcementType === "completed")
-            torrent.isStartAnnounced = true;
+            torrent.isFinishAnnounced = true;
         
-
-        return decoded ? true : false;
+        return true;
     }
 
     catch (err) {
-        if (err instanceof Error)
-            console.log(err.message);
-        else 
-            console.log(err);
+        console.log(err);
         return false;
     }
 

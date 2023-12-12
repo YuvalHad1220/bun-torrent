@@ -1,13 +1,41 @@
 import mongoose from "mongoose";
-import { iDatabaseHandler } from "../interfaces";
+import { iDatabaseHandler, iReducedTorrent } from "../interfaces";
 import decodeTorrentFile from '../Functions/ParseTorrentFile';
 
 const torrentGroup = (app : any, db: iDatabaseHandler) => {
-    app.group("/api/torrent", app => 
-    app.get("/", async () => {
-        return await db.getTorrents();
-    })
-    .post("/", async handler => {
+    app.group("/api/torrent", (app) => 
+    app.get("/", async (): Promise<iReducedTorrent[]> => {
+        const torrents = await db.getTorrents();
+        
+        const mappedTorrents = await Promise.all(
+            torrents.map(async ({ timeToAnnounce, clientId, isFinishAnnounced, isStartAnnounced, name, downloaded, uploaded, tempTakenDownload, seeders, leechers, tempTakenUpload, maxDownloadSpeed, size, maxUploadSpeed }) => {
+                if (!clientId) return null;
+    
+                const client = await db.getClients(clientId);
+                const clientName = client[0]?.name || "Unknown Client"; // Provide a default if client name is not found.
+    
+                return {
+                    clientName,
+                    size,
+                    timeToAnnounce,
+                    isFinishAnnounced,
+                    isStartAnnounced,
+                    name,
+                    downloaded,
+                    seeders,
+                    leechers,
+                    uploaded,
+                    tempTakenDownload,
+                    tempTakenUpload,
+                    maxDownloadSpeed,
+                    maxUploadSpeed,
+                };
+            })
+        );
+    
+        return mappedTorrents.filter(torrent => torrent !== null) as iReducedTorrent[];
+    })    
+    .post("/", async (handler) => {
         interface requestPayload {
             files: Blob[] | Blob,
             maxDownloadSpeedInBytes: string,
