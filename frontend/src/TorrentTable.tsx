@@ -1,17 +1,25 @@
+import { useState } from "react";
 import { iReducedTorrent } from "../interfaces";
 import { useQuery } from "react-query";
 function formatBytes(bytes: number) {
     const kibibyte = 1024;
     const mebibyte = kibibyte * 1024;
+    const gibibyte = mebibyte * 1024;
+    const tebibyte = gibibyte * 1024;
 
     if (bytes < kibibyte) {
         return bytes + ' B';
     } else if (bytes < mebibyte) {
         return (bytes / kibibyte).toFixed(2) + ' KB';
-    } else {
+    } else if (bytes < gibibyte) {
         return (bytes / mebibyte).toFixed(2) + ' MB';
+    } else if (bytes < tebibyte) {
+        return (bytes / gibibyte).toFixed(2) + ' GB';
+    } else {
+        return (bytes / tebibyte).toFixed(2) + ' TB';
     }
 }
+
 function formatTime(seconds: number) {
     const minute = 60;
     const hour = minute * 60;
@@ -30,14 +38,22 @@ function formatTime(seconds: number) {
 }
 
 const TorrentTable = () => {
+    const [pageState, setPageState] = useState({
+        pageIndex: 0,
+        rowsPerPage: 200
+    });
+    
     const { isLoading, error, data } = useQuery<iReducedTorrent[]>('torrentsData', () =>
-    fetch('http://localhost:8080/api/torrent/').then(res =>
-      res.json()
-    ),
-    {refetchInterval: 30 * 1000});
+        fetch(`http://localhost:8080/api/torrent/?pageIndex=${pageState.pageIndex}&rowsPerPage=${pageState.rowsPerPage}`).then(res =>
+            res.json()
+        ),
+        { refetchInterval: 30 * 1000 }
+    );
+
 
   return (
-    <table className="table table-pin-rows">
+    <div className="w-full h-full flex flex-col">
+            <table className="table table-pin-rows">
         <thead>
             <tr>
                 <th></th>
@@ -77,6 +93,11 @@ const TorrentTable = () => {
             })}
         </tbody>
     </table>
+    <div className="join gap">
+        <button className="join-item btn btn-rounded"  onClick={() => setPageState(prev => ({...prev, pageIndex: prev.pageIndex + 1}))}>next Page</button>
+        <button className="join-item btn btn-rounded" disabled={pageState.pageIndex === 0} onClick={() => setPageState(prev => ({...prev, pageIndex: prev.pageIndex - 1}))}>prev Page</button>
+    </div>
+    </div>
   )
 };
 
