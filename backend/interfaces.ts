@@ -85,6 +85,7 @@ export interface iDecodedAnnounce {
     interval: number,
     complete: number,
     incomplete: number,
+    "failure reason"?: string
 }
 
 

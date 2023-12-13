@@ -42,31 +42,36 @@ export default async (connectionUri: string) : Promise<iDatabaseHandler> => {
         return false;
     };
 
-    // const updateTorrents = async (torrents: Set<iTorrent>) => {
-    //     const asArray = Array.from(torrents);
-    //     const result = await TorrentModel.updateMany({_id: {$in: asArray.map(torrent => torrent._id)}}, {$set: asArray});
-    //     console.log(result)
-    //     return result.acknowledged;
-    // };
-
     const updateTorrents = async (torrents: Set<iTorrent>) => {
-        console.log("torrents to update:", torrents.size)
-        const tasks = Array.from(torrents).map(async torrent => {
-            return await TorrentModel.updateOne({_id: torrent._id}, {$set: {
-                uploaded: torrent.uploaded,
-                downloaded: torrent.downloaded, 
-                isStartAnnounced: torrent.isStartAnnounced,
-                isFinishAnnounced: torrent.isFinishAnnounced,
-                seeders: torrent.seeders,
-                leechers: torrent.leechers,
-                timeToAnnounce: torrent.timeToAnnounce
-            }})
-        });
-
-        const results = await Promise.all(tasks);
-
-        return !results.some(res => !res.acknowledged)
-    }
+        console.log("torrents to update:", torrents.size);
+    
+        const bulkOperations = Array.from(torrents).map((torrent) => ({
+            updateOne: {
+                filter: { _id: torrent._id },
+                update: {
+                    $set: {
+                        uploaded: torrent.uploaded,
+                        downloaded: torrent.downloaded,
+                        isStartAnnounced: torrent.isStartAnnounced,
+                        isFinishAnnounced: torrent.isFinishAnnounced,
+                        seeders: torrent.seeders,
+                        leechers: torrent.leechers,
+                        timeToAnnounce: torrent.timeToAnnounce,
+                    },
+                },
+            },
+        }))
+    
+    
+        try {
+            const result = await TorrentModel.bulkWrite(bulkOperations);
+            return result.modifiedCount === torrents.size;
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    };
+    
     const addClient = async (client: iClient) => {
         client._id = new mongoose.Types.ObjectId();
         const clientItem = new ClientModel(client);

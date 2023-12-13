@@ -1,117 +1,41 @@
 import { Elysia } from 'elysia';
 import DatabaseHandler from './Functions/DatabaseHandler';
-import { iTorrent, iDatabaseHandler, iClient, announceType } from './interfaces';
-import AnnounceHandler from './Functions/AnnounceHandler';
+import { iDatabaseHandler } from './interfaces';
+import { announceLoop } from './Functions/AnnounceHandler';
 import cors from '@elysiajs/cors';
 import torrentGroup from './routes/Torrent';
 import clientsGroup from './routes/Client';
+import { caclulationLoop } from './Functions/calculationLoop';
+import executeTasksWithDelay from './Functions/TasksWithDelay';
 
-// if we change our upload \ download then we need to save the updated state to the database; else, it means that we dont download\upload and we didnt change state so we dont save to db. 
-// any changes that happen because of announcement will already be saved to the db on announcement
-const needsToBeSaved = (torrent: iTorrent) : boolean => {
-    return torrent.tempTakenDownload > 0 || torrent.tempTakenUpload > 0;
-}
 
-const registerLoop = async (db: iDatabaseHandler) => {
+const loop = async (db: iDatabaseHandler) => {
     const torrents = await db.getTorrents();
     const clients = await db.getClients();
 
-    const torrentTasksToAnnounce: Promise<any>[] = [];
+    // we will announce, and then save to the db the needed items
+    const {torrentTasksToAnnounce, announcedTorrentsToSave, torrentQueueToSave} = announceLoop(torrents, clients);
+    caclulationLoop(clients, torrents);
+    console.log("tasks to announce:", torrentTasksToAnnounce.length)
+    console.time("task wait time")
+    await executeTasksWithDelay(torrentTasksToAnnounce.slice(2), 5000);
+    console.timeEnd("task wait time")
 
-    // will contain all the torrents that were announced and not saved
-    const announcedTorrentsToSave = new Set<iTorrent>();
-    // will save the torrents every 15 minutes
-    const torrentQueueToSave = new Set<iTorrent>();
-
-    const announceSaveAdapter = async (announcementType: announceType, torrent: iTorrent, client: iClient) => {
-        console.log("going to announce")
-        const announceResult = await AnnounceHandler(announcementType, torrent, client);
-        if (announceResult){
-            console.log("announce success")
-            announcedTorrentsToSave.add(torrent);
-        }
-    };
-
-    // main loop of announceing
-    torrents.forEach((torrent, i) => {
-        console.log("index", i, torrent.timeToAnnounce)
-        const client = clients.find(client => client._id?.equals(torrent.clientId));
-        if (!client)
-            return;
-
-        // start announce
-        if (!torrent.isStartAnnounced) {
-            torrentTasksToAnnounce.push(announceSaveAdapter("started", torrent, client));
-        }
-        // finish announce
-        else if (torrent.downloaded / torrent.size >= 100 && !torrent.isFinishAnnounced){
-            torrentTasksToAnnounce.push(announceSaveAdapter("completed", torrent, client));
-        }
-
-        // resume announce (not need to be saved since this is not special ocasion)
-        else if (torrent.timeToAnnounce <= 0){
-            torrentTasksToAnnounce.push(announceSaveAdapter("resume", torrent, client));
-        }
-        // saving to db every 5 minutes
-        if (torrent.timeToAnnounce % (5 * 60) === 0){
-            if (!announcedTorrentsToSave.has(torrent) && needsToBeSaved(torrent))
-                torrentQueueToSave.add(torrent)
-        }
-
-        torrent.timeToAnnounce -= 30;
-
-    });
-    
-    // main loop of downloading \ uploading
-    // we will take bandwidth until we cant no more
-    clients.forEach((client, i) => {
-        const torrentsOfClient = torrents.filter(torrent => torrent.clientId?.equals(client._id));
-        const clientDownloadBandwidth = client.downloadLimit * 30;
-        const clientUploadBandwidth = client.uploadLimit * 30;
-        let tempTakenDownload = 0;
-        let tempTakenUpload = 0;
-        torrentsOfClient.forEach((torrent, i) => {
-            // calculate a random max, for 30 seconds.
-            let downloadable = (torrent.seeders < 3 ? Math.random() * 1000 * 4 : Math.random() * torrent.maxDownloadSpeed) * 30;
-            let uploadable = (torrent.leechers < 3 ? Math.random() * 1000 : Math.random() * torrent.maxUploadSpeed) * 30;
-
-            if (torrent.size === torrent.downloaded || torrent.seeders === 0 || (torrent.seeders === 1 && torrent.isFinishAnnounced))
-                downloadable = 0;
-            if (torrent.leechers === 0 || (torrent.leechers === 1 && !torrent.isFinishAnnounced))
-                uploadable = 0
-
-            // matching the current available. that means that some torrents wont have upload\download speed
-            downloadable = Math.round(Math.min(downloadable, clientDownloadBandwidth - tempTakenDownload));
-            uploadable = Math.round(Math.min(uploadable, clientUploadBandwidth - tempTakenUpload));
-
-            tempTakenDownload += downloadable;
-            tempTakenUpload += uploadable;
-
-            // to flag wheater torrent to be saved or not
-            torrent.tempTakenDownload = downloadable;
-            torrent.tempTakenUpload = uploadable;
-
-            torrent.downloaded += downloadable;
-            torrent.uploaded += uploadable;
-
-            torrent.downloaded = Math.min(torrent.downloaded, torrent.size);
-        })
-
-        console.log(tempTakenDownload, tempTakenUpload)
-
-    })
-    // after this line newStatesToSaveAndAnnounce will include only successfully announced torrents
-    if (torrentTasksToAnnounce.length > 0)
-        await Promise.all(torrentTasksToAnnounce);
-    if (announcedTorrentsToSave.size > 0)
+    console.log("tasks to save:", announcedTorrentsToSave.size)
+    if (announcedTorrentsToSave.size > 0) {
         await db.updateTorrents(announcedTorrentsToSave);
-    // only updating torrents when at least an 1/8 of it needs to be saved.
-    if (torrentQueueToSave.size > torrents.length / 8)
-        await db.updateTorrents(torrentQueueToSave);
-
+        announcedTorrentsToSave.clear()
     }
+        
+    // batching - wont save until atleast 10% are waiting
+    if (torrentQueueToSave.size > 0) {
+        await db.updateTorrents(torrentQueueToSave);
+    }
+    return announcedTorrentsToSave ? 5 : 0;
+}
 
 const main = async () => {
+    
     const db = await DatabaseHandler(process.env.REMOTE_DB!);
     // const app = new Elysia().decorate("dbHandler", db);
     const app = new Elysia();
@@ -122,12 +46,10 @@ const main = async () => {
     app.listen(8080);
     console.log("up and running");
     while (true) {
-        await registerLoop(db);
-        await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // do that once every 30 seconds
+        const timeToWait = await loop(db);
+        await new Promise((resolve) => setTimeout(resolve, (30 - timeToWait) * 1000)); // do that once every 30 seconds less the timeout time
 
     }
-    
-
 }
 
 main();

@@ -1,14 +1,23 @@
 import mongoose from "mongoose";
 import { iDatabaseHandler, iReducedTorrent } from "../interfaces";
 import decodeTorrentFile from '../Functions/ParseTorrentFile';
+import Elysia from "elysia";
 
-const torrentGroup = (app : any, db: iDatabaseHandler) => {
-    app.group("/api/torrent", (app) => 
-    app.get("/", async (): Promise<iReducedTorrent[]> => {
+const torrentGroup = (main: Elysia<any>, db: iDatabaseHandler) => {
+    main.group("/api/torrent", (app) => 
+    app.get("/", async (handle): Promise<iReducedTorrent[]> => {
         const torrents = await db.getTorrents();
-        
+        let torrentsToReturn;
+        const pageIndex = parseInt(handle.query.pageIndex ?? "-1");
+        const rowsPerPage = parseInt(handle.query.rowsPerPage ?? "-1");
+        if (pageIndex + rowsPerPage > 0){
+           torrentsToReturn = torrents.slice(pageIndex * rowsPerPage, (pageIndex + 1) * rowsPerPage);
+        }
+        else {
+            torrentsToReturn = torrents;
+        }
         const mappedTorrents = await Promise.all(
-            torrents.map(async ({ timeToAnnounce, clientId, isFinishAnnounced, isStartAnnounced, name, downloaded, uploaded, tempTakenDownload, seeders, leechers, tempTakenUpload, maxDownloadSpeed, size, maxUploadSpeed }) => {
+            torrentsToReturn.map(async ({ timeToAnnounce, clientId, isFinishAnnounced, isStartAnnounced, name, downloaded, uploaded, tempTakenDownload, seeders, leechers, tempTakenUpload, maxDownloadSpeed, size, maxUploadSpeed }) => {
                 if (!clientId) return null;
     
                 const client = await db.getClients(clientId);
@@ -53,11 +62,12 @@ const torrentGroup = (app : any, db: iDatabaseHandler) => {
 
         const tasks = payload.files.map(file => file.arrayBuffer());
         const torrentsAsArrayBuffer = await Promise.all(tasks);
-        const torrents = torrentsAsArrayBuffer.map(decodeTorrentFile);        
+        const torrents = torrentsAsArrayBuffer.map(decodeTorrentFile);   
         torrents.forEach(torrent => {
             torrent.maxDownloadSpeed = parseInt(payload.maxDownloadSpeedInBytes);
             torrent.maxUploadSpeed = parseInt(payload.maxUploadSpeedInBytes);
             torrent.downloaded = Math.floor(parseInt(payload.progress) / 100 * torrent.size);
+            torrent.isStartAnnounced = parseInt(payload.progress) > 0
             torrent.clientId = clientId;
         });
 
