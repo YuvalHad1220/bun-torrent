@@ -5,9 +5,10 @@ import classNames from "classnames";
 import ClientTable from "./ClientTable.tsx";
 import TorrentTable from "./TorrentTable.tsx";
 import { QueryClient, QueryClientProvider } from "react-query";
+import RSSForm from "./RSSForm.tsx";
 
 function App() {
-  type DISPLAYABLES = "TORRENT_FORM" | "TORRENT_TABLE" | "CLIENT_FORM" | "CLIENT_TABLE"
+  type DISPLAYABLES = "TORRENT_FORM" | "TORRENT_TABLE" | "CLIENT_FORM" | "CLIENT_TABLE" | "RSS_FORM"
   const [displayed, setDisplayed] = useState<DISPLAYABLES>("TORRENT_TABLE");
   const queryClient = new QueryClient()
 
@@ -15,6 +16,7 @@ function App() {
     <div className="flex flex-col gap-3 p-2 mt-auto">
       <button onClick={() => setDisplayed("TORRENT_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "TORRENT_FORM" })}>Add Torrents</button>
       <button onClick={() => setDisplayed("CLIENT_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "CLIENT_FORM" })}>Add Client</button>
+      <button onClick={() => setDisplayed("RSS_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "CLIENT_FORM" })}>Add RSS</button>
     </div>
   );
 
@@ -30,6 +32,7 @@ function App() {
     "TORRENT_TABLE": <TorrentTable />,
     "CLIENT_FORM": <ClientForm />,
     "CLIENT_TABLE": <ClientTable />,
+    "RSS_FORM": <RSSForm />
 };
 
   return (

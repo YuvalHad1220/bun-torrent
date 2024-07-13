@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { iReducedTorrent } from "../interfaces";
 import { useQuery } from "react-query";
+import { iReducedTorrent } from "../interfaces";
+
 function formatBytes(bytes: number) {
     const kibibyte = 1024;
     const mebibyte = kibibyte * 1024;
@@ -42,7 +43,7 @@ const TorrentTable = () => {
         pageIndex: 0,
         rowsPerPage: 200
     });
-    
+
     const { isLoading, error, data } = useQuery<iReducedTorrent[]>('torrentsData', () =>
         fetch(`http://localhost:8080/api/torrent/?pageIndex=${pageState.pageIndex}&rowsPerPage=${pageState.rowsPerPage}`).then(res =>
             res.json()
@@ -50,55 +51,56 @@ const TorrentTable = () => {
         { refetchInterval: 10 * 1000 }
     );
 
+    return (
+        <div className="w-full h-full flex flex-col">
+            <div className="overflow-x-auto">
+                <table className="table table-pin-rows">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>Client Name</th>
+                            <th>Progress</th>
+                            <th>Download Speed</th>
+                            <th>Upload Speed</th>
+                            <th>Size</th>
+                            <th>Downloaded</th>
+                            <th>Uploaded</th>
+                            <th>Seeders</th>
+                            <th>Leechers</th>
+                            <th>Announcement Time</th>
+                        </tr>
+                    </thead>
 
-  return (
-    <div className="w-full h-full flex flex-col">
-            <table className="table table-pin-rows">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Client Name</th>
-                <th>Progress</th>
-                <th>Download Speed</th>
-                <th>Upload Speed</th>
-                <th>Size</th>
-                <th>Downloaded</th>
-                <th>Uploaded</th>
-                <th>Seeders</th>
-                <th>Leechers</th>
-                <th>Announcement Time</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {!isLoading && data?.map(torrent => {
-                const progress = (torrent.downloaded * 100 / torrent.size).toFixed(2) + "%";
-                return (
-                    <tr key={torrent.name + torrent.clientName}>
-                        <td></td>
-                        <td>{torrent.name}</td>
-                        <td>{torrent.clientName}</td>
-                        <td>{progress}</td>
-                        <td>{formatBytes(Math.round(torrent.tempTakenDownload / 30))} /s</td>
-                        <td>{formatBytes(Math.round(torrent.tempTakenUpload / 30))} /s</td>
-                        <td>{formatBytes(torrent.size)}</td>
-                        <td>{formatBytes(torrent.downloaded)}</td>
-                        <td>{formatBytes(torrent.uploaded)}</td>
-                        <td>{torrent.seeders}</td>
-                        <td>{torrent.leechers}</td>
-                        <td>{formatTime(torrent.timeToAnnounce)}</td>
-                    </tr>
-                )
-            })}
-        </tbody>
-    </table>
-    <div className="join gap">
-        <button className="join-item btn btn-rounded"  onClick={() => setPageState(prev => ({...prev, pageIndex: prev.pageIndex + 1}))}>next Page</button>
-        <button className="join-item btn btn-rounded" disabled={pageState.pageIndex === 0} onClick={() => setPageState(prev => ({...prev, pageIndex: prev.pageIndex - 1}))}>prev Page</button>
-    </div>
-    </div>
-  )
+                    <tbody>
+                        {!isLoading && data?.map(torrent => {
+                            const progress = (torrent.downloaded * 100 / torrent.size).toFixed(2) + "%";
+                            return (
+                                <tr key={torrent.name + torrent.clientName}>
+                                    <td></td>
+                                    <td>{torrent.name}</td>
+                                    <td>{torrent.clientName}</td>
+                                    <td>{progress}</td>
+                                    <td>{formatBytes(Math.round(torrent.tempTakenDownload / 30))} /s</td>
+                                    <td>{formatBytes(Math.round(torrent.tempTakenUpload / 30))} /s</td>
+                                    <td>{formatBytes(torrent.size)}</td>
+                                    <td>{formatBytes(torrent.downloaded)}</td>
+                                    <td>{formatBytes(torrent.uploaded)}</td>
+                                    <td>{torrent.seeders}</td>
+                                    <td>{torrent.leechers}</td>
+                                    <td>{formatTime(torrent.timeToAnnounce)}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+            <div className="join gap">
+                <button className="join-item btn btn-rounded" onClick={() => setPageState(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}>Next Page</button>
+                <button className="join-item btn btn-rounded" disabled={pageState.pageIndex === 0} onClick={() => setPageState(prev => ({ ...prev, pageIndex: prev.pageIndex - 1 }))}>Previous Page</button>
+            </div>
+        </div>
+    );
 };
 
 export default TorrentTable;
