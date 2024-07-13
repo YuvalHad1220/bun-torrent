@@ -44,7 +44,7 @@ const TorrentTable = () => {
         rowsPerPage: 200
     });
 
-    const { isLoading, error, data } = useQuery<iReducedTorrent[]>('torrentsData', () =>
+    const { isLoading, data } = useQuery<iReducedTorrent[]>('torrentsData', () =>
         fetch(`http://localhost:8080/api/torrent/?pageIndex=${pageState.pageIndex}&rowsPerPage=${pageState.rowsPerPage}`).then(res =>
             res.json()
         ),

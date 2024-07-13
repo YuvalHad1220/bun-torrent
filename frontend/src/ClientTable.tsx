@@ -11,7 +11,7 @@ const theads = {
     "Download Limit": "downloadLimit",
 };
 
-const formatBytes = (bytes) => {
+const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];

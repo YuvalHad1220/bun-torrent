@@ -17,7 +17,8 @@ export interface iTorrent {
     uploaded: number,
     tempTakenDownload: number,
     tempTakenUpload: number,
-    clientId: mongoose.Types.ObjectId | null
+    clientId: mongoose.Types.ObjectId | null,
+    rssId?: mongoose.Types.ObjectId
 }
 
 export interface iClient {
@@ -29,6 +30,17 @@ export interface iClient {
     uploadLimit: number,  // Limit in Bytes at how much client can upload
     downloadLimit: number,  // Limit in Bytes at how much client can download
     peerId: string,  // A peer ID which is originated in the ORIGINAL torrent client. Example for one: -AZ3020-
+}
+
+
+export interface iRSS {
+    _id: mongoose.Types.ObjectId | undefined,
+    name: string,
+    rssLink: string,
+    clientId: mongoose.Types.ObjectId,
+    maxDownloadSpeed: number,
+    maxUploadSpeed: number,
+    latestUpdateDate: Date | undefined
 }
 
 export interface iDecodedTorrentFile {
@@ -53,7 +65,10 @@ export interface iDatabaseHandler {
     getTorrents: (id? : mongoose.Types.ObjectId) => Promise<iTorrent[]>,
     deleteTorrent: (id : mongoose.Types.ObjectId) => Promise<boolean>,
     deleteClient: (id : mongoose.Types.ObjectId) => Promise<boolean>,
-    updateTorrents: (torrents: Set<iTorrent>) => Promise<boolean>
+    updateTorrents: (torrents: Set<iTorrent>) => Promise<boolean>,
+    addRSS: (RSS: iRSS) => Promise<boolean>,
+    getRSSs: (id?: mongoose.Types.ObjectId) => Promise<iRSS[]>,
+    updateRss: (RSS: iRSS) => Promise<boolean>
 }
 
 export type announceType = "started" | "completed" | "resume";

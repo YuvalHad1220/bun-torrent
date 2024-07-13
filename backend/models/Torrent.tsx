@@ -21,6 +21,7 @@ export const torrentSchema = new mongoose.Schema<iTorrent>({
     uploaded: Number,
     tempTakenDownload: Number,
     tempTakenUpload: Number,
+    rssId: mongoose.Types.ObjectId
 });
 
 export const TorrentModel = mongoose.model('Torrent', torrentSchema);

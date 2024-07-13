@@ -23,9 +23,9 @@ const generateId = () => {
 type FormInputs = {
   name: string,
   downloadLimit: number,
-  downloadLimitUnit: string,
+  downloadLimitUnit: "Bs" | "KBs" | "MBs" | "GBs",
   uploadLimit: number,
-  uploadLimitUnit: string,
+  uploadLimitUnit: "Bs" | "KBs" | "MBs" | "GBs"
   port: number,
   randId: string,
   selectedName: string

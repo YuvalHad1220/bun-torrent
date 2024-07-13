@@ -13,7 +13,6 @@ interface RSSItem {
   title: string;
   link: string;
   pubDate: string;
-  guid: string;
 }
 
 let entries: RSSItem[] = [];

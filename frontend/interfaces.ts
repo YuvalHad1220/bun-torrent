@@ -20,6 +20,16 @@ export interface iTorrent {
     clientId: mongoose.Types.ObjectId | null
 }
 
+export interface iRSS {
+    _id?: mongoose.Types.ObjectId,
+    name: string,
+    rssLink: string,
+    clientId: mongoose.Types.ObjectId,
+    maxDownloadSpeed: number,
+    maxUploadSpeed: number,
+    latestUpdateDate?: Date
+}
+
 export interface iClient {
     _id: mongoose.Types.ObjectId | null,
     name: string,  // How client will be represented to the user

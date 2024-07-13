@@ -6,18 +6,18 @@ import { useEffect, useState } from "react";
 type FormData = {
     clientName: string;
     uploadSpeed: number;
-    uploadSpeedUnit: string;
+    uploadSpeedUnit: "Bs" | "KBs" | "MBs" | "GBs";
     downloadSpeed: number;
-    downloadSpeedUnit: string;
+    downloadSpeedUnit: "Bs" | "KBs" | "MBs" | "GBs";
     progress: number;
     files: FileList;
 };
 
 const units = {
-    bytes: 1,
-    kilobytes: 1024,
-    megabytes: 1024 * 1024,
-    gigabytes: 1024 * 1024 * 1024,
+    Bs: 1,
+    KBs: 1024,
+    MBs: 1024 * 1024,
+    GBs: 1024 * 1024 * 1024,
 };
 
 const TorrentForm = () => {
@@ -32,9 +32,9 @@ const TorrentForm = () => {
     } = useForm<FormData>({
         defaultValues: {
             uploadSpeed: 0,
-            uploadSpeedUnit: "bytes",
-            downloadSpeed: 128000, // 125KBs
-            downloadSpeedUnit: "bytes",
+            uploadSpeedUnit: "MBs",
+            downloadSpeed: 2, // 125KBs
+            downloadSpeedUnit: "Bs",
             progress: 0,
             clientName: clients.length ? clients[0].name : ""
         }
@@ -96,10 +96,10 @@ const TorrentForm = () => {
                 <div className="flex">
                     <input type="number" className="input input-bordered" {...register('downloadSpeed', { required: 'Download speed is required', min: 100 })} placeholder="Download Speed" />
                     <select {...register('downloadSpeedUnit', { required: true })} className="select select-bordered">
-                        <option value="bytes">Bs</option>
-                        <option value="kilobytes">KBs</option>
-                        <option value="megabytes">MBs</option>
-                        <option value="gigabytes">GBs</option>
+                        <option value="Bs">Bs</option>
+                        <option value="KBs">KBs</option>
+                        <option value="MBs">MBs</option>
+                        <option value="GBs">GBs</option>
                     </select>
                 </div>
                 {errors.downloadSpeed && <span className="text-red-500">{errors.downloadSpeed.message}</span>}
