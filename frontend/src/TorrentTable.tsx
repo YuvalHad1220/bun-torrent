@@ -47,7 +47,7 @@ const TorrentTable = () => {
         fetch(`http://localhost:8080/api/torrent/?pageIndex=${pageState.pageIndex}&rowsPerPage=${pageState.rowsPerPage}`).then(res =>
             res.json()
         ),
-        { refetchInterval: 30 * 1000 }
+        { refetchInterval: 10 * 1000 }
     );
 
 
