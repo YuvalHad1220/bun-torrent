@@ -52,7 +52,7 @@ const main = async () => {
   // we sleep 30 seconds every time so if counter is at 30 that means we slept for 900 seconds, which is 15 minutes
   while (true) {
     let timeToWait = await torrentLoop(db);
-    if (counter % 30 === 0) {
+    if (counter % 10 === 0) {
       const RSSs = await db.getRSSs();
       const loop_time = await RSSLoop(RSSs, db);
       console.log("RSS time: " + loop_time);

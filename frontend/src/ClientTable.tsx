@@ -1,26 +1,23 @@
 import { useQuery } from "react-query";
-import { getClients } from "./assets/RequestsHandler";
-import { iClient } from "../interfaces";
+import { getClientsSummarized } from "./assets/RequestsHandler";
+import { iClientSummarized } from "../interfaces";
+import { formatBytes } from "./assets/formatBytes";
 
 const theads = {
-    "Client Name": "name",
-    "Random ID": "randId",
-    "User Agent": "userAgent",
-    "Port": "port",
-    "Upload Limit": "uploadLimit",
-    "Download Limit": "downloadLimit",
+    "Client Name": "clientName",
+    "Seeders": "seeders",
+    "Leechers": "leechers",
+    "Downloaded": "downloaded",
+    "Uploaded": "uploaded",
+    "Download Speed": "downloadSpeed",
+    "Upload Speed": "uploadSpeed",
+    "Torrents Count": "torrentsCount",
+    "Size": "size"
 };
 
-const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
 
 const ClientTable = () => {
-    const { data: clients, error, isLoading } = useQuery('clients', getClients);
+    const { data: clients, error, isLoading } = useQuery('clientsSummarized', getClientsSummarized);
 
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>Error loading data</div>;
@@ -34,14 +31,17 @@ const ClientTable = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {clients?.map((client: iClient) => (
-                        <tr key={client.randId}>
-                            <td>{client.name}</td>
-                            <td>{client.randId}</td>
-                            <td>{client.userAgent}</td>
-                            <td>{client.port}</td>
-                            <td>{formatBytes(client.uploadLimit)}</td>
-                            <td>{formatBytes(client.downloadLimit)}</td>
+                    {clients?.map((client: iClientSummarized) => (
+                        <tr key={client.clientName}>
+                            <td>{client.clientName}</td>
+                            <td>{client.seeders}</td>
+                            <td>{client.leechers}</td>
+                            <td>{formatBytes(client.downloaded)}</td>
+                            <td>{formatBytes(client.uploaded)}</td>
+                            <td>{formatBytes(client.downloadSpeed / 30)}/s</td>
+                            <td>{formatBytes(client.uploadSpeed / 30)}/s</td>
+                            <td>{client.torrentsCount}</td>
+                            <td>{formatBytes(client.size)}</td>
                         </tr>
                     ))}
                 </tbody>

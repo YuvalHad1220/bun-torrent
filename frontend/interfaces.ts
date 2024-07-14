@@ -43,6 +43,19 @@ export interface iClient {
     availableDownload: number,  // How much upload bandwidth is available in Bytes
 }
 
+export interface iClientSummarized {
+    clientName: string;
+    seeders: number;
+    leechers: number;
+    downloaded: number;
+    uploaded: number;
+    downloadSpeed: number;
+    uploadSpeed: number;
+    torrentsCount: number;
+    size: number;
+    // Add other fields as needed
+}
+
 export interface iDecodedTorrentFile {
     announce: Buffer,
     info: {

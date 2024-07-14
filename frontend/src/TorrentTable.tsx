@@ -1,25 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "react-query";
 import { iReducedTorrent } from "../interfaces";
+import { formatBytes } from "./assets/formatBytes";
 
-function formatBytes(bytes: number) {
-    const kibibyte = 1024;
-    const mebibyte = kibibyte * 1024;
-    const gibibyte = mebibyte * 1024;
-    const tebibyte = gibibyte * 1024;
-
-    if (bytes < kibibyte) {
-        return bytes + ' B';
-    } else if (bytes < mebibyte) {
-        return (bytes / kibibyte).toFixed(2) + ' KB';
-    } else if (bytes < gibibyte) {
-        return (bytes / mebibyte).toFixed(2) + ' MB';
-    } else if (bytes < tebibyte) {
-        return (bytes / gibibyte).toFixed(2) + ' GB';
-    } else {
-        return (bytes / tebibyte).toFixed(2) + ' TB';
-    }
-}
 
 function formatTime(seconds: number) {
     const minute = 60;
@@ -48,7 +31,7 @@ const TorrentTable = () => {
         fetch(`http://localhost:8080/api/torrent/?pageIndex=${pageState.pageIndex}&rowsPerPage=${pageState.rowsPerPage}`).then(res =>
             res.json()
         ),
-        { refetchInterval: 10 * 1000 }
+        { refetchInterval: 4 * 1000 }
     );
 
     return (

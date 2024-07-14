@@ -21,6 +21,7 @@ function groupBy<T>(array: T[], key: keyof T): Object {
       summary.downloadSpeed = (summary.downloadSpeed || 0) + torrent.tempTakenDownload;
       summary.uploadSpeed = (summary.uploadSpeed || 0) + torrent.tempTakenUpload;
       summary.torrentsCount = (summary.torrentsCount || 0) + 1;
+      summary.size = (summary.size || 0) + torrent.size
       // Add other fields as needed
       return summary;
     }, {} as any);

@@ -1,4 +1,4 @@
-import { iClient, iGithubClientList, iRSS} from "../../interfaces";
+import { iClient, iClientSummarized, iGithubClientList, iRSS} from "../../interfaces";
 export const getClients = async (): Promise<iClient[]> => {
     try {
         const response = await fetch('/api/client/', {
@@ -13,6 +13,21 @@ export const getClients = async (): Promise<iClient[]> => {
       console.log((err as any).message);
         return [];
     }
+}
+export const getClientsSummarized = async (): Promise<iClientSummarized[]> => {
+  try {
+      const response = await fetch('/api/client/summarized', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      return await response.json();
+  }
+  catch (err) {
+    console.log((err as any).message);
+      return [];
+  }
 }
 export const postClient = async (client: iClient): Promise<boolean> => {
     try {

@@ -17,7 +17,7 @@ interface RSSItem {
 
 const torrentLinkAsBuffer = async (url: string): Promise<iTorrent> => {
   try {
-    const response = await fetch(url);
+    const response = await fetch(encodeURI(url));
     if (!response.ok) {
       throw new Error(
         `Failed to fetch torrent file. Status: ${response.status} ${response.statusText}`
