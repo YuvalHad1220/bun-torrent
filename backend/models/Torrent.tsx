@@ -22,7 +22,7 @@ export const torrentSchema = new mongoose.Schema<iTorrent>({
     tempTakenDownload: Number,
     tempTakenUpload: Number,
     rssId: mongoose.Types.ObjectId
-});
+}, {timestamps: true});
 
 export const TorrentModel = mongoose.model('Torrent', torrentSchema);
 

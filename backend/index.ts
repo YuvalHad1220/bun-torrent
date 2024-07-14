@@ -10,6 +10,9 @@ import executeTasksWithDelay from "./Functions/TasksWithDelay";
 import rssGroup from "./routes/RSS";
 import { RSSLoop } from "./Functions/RSSHandler";
 
+
+const TIME_TO_TIMEOUT = 2500
+const TIME_BETWEEN_LOOPS = 30000
 const torrentLoop = async (db: iDatabaseHandler) => {
   const torrents = await db.getTorrents();
   const clients = await db.getClients();
@@ -22,7 +25,7 @@ const torrentLoop = async (db: iDatabaseHandler) => {
   } = announceLoop(torrents, clients);
   caclulationLoop(clients, torrents);
   console.log("tasks to announce:", torrentTasksToAnnounce.length);
-  await executeTasksWithDelay(torrentTasksToAnnounce, 2500);
+  await executeTasksWithDelay(torrentTasksToAnnounce, TIME_TO_TIMEOUT);
 
   console.log("tasks to save:", announcedTorrentsToSave.size);
   if (announcedTorrentsToSave.size > 0) {
@@ -34,7 +37,7 @@ const torrentLoop = async (db: iDatabaseHandler) => {
   if (torrentQueueToSave.size > 0) {
     await db.updateTorrents(torrentQueueToSave);
   }
-  return announcedTorrentsToSave ? 5000 : 0;
+  return announcedTorrentsToSave ? TIME_TO_TIMEOUT : 0;
 };
 
 const main = async () => {
@@ -51,17 +54,17 @@ const main = async () => {
   let counter = 0;
   // we sleep 30 seconds every time so if counter is at 30 that means we slept for 900 seconds, which is 15 minutes
   while (true) {
-    let timeToWait = await torrentLoop(db);
+    let timeAlreadyWaited = await torrentLoop(db);
     if (counter % 10 === 0) {
       const RSSs = await db.getRSSs();
       const loop_time = await RSSLoop(RSSs, db);
       console.log("RSS time: " + loop_time);
       counter = 0;
-      timeToWait += loop_time;
+      timeAlreadyWaited += loop_time;
     }
     console.log({ counter });
     counter++;
-    await new Promise((resolve) => setTimeout(resolve, 30 * 1000 - timeToWait)); // do that once every 30 seconds less the timeout time
+    await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_LOOPS - timeAlreadyWaited)); // do that once every 30 seconds less the timeout time
   }
 };
 

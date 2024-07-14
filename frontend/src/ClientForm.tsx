@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { iClient, iGithubClientList } from "../interfaces";
-import { SubmitHandler } from "react-hook-form";
 import { getGithubClients, postClient } from "./assets/RequestsHandler";
 
 const generatePort = () => {
@@ -25,10 +24,16 @@ type FormInputs = {
   downloadLimit: number,
   downloadLimitUnit: "Bs" | "KBs" | "MBs" | "GBs",
   uploadLimit: number,
-  uploadLimitUnit: "Bs" | "KBs" | "MBs" | "GBs"
+  uploadLimitUnit: "Bs" | "KBs" | "MBs" | "GBs",
   port: number,
   randId: string,
-  selectedName: string
+  selectedName: string,
+  maxUploadSize: number,
+  maxUploadSizeUnit: "Bs" | "KBs" | "MBs" | "GBs", // Added unit field
+  maxDownloadableSize: number,
+  maxDownloadableSizeUnit: "Bs" | "KBs" | "MBs" | "GBs", // Added unit field
+  minRatio: number,
+  maxRatio: number
 }
 
 const units = {
@@ -44,18 +49,23 @@ const ClientForm = () => {
 
   const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<FormInputs>({
     defaultValues: {
-      downloadLimit: 1000000, // 1 MB
-      downloadLimitUnit: "Bs",
-      uploadLimit: 10,
-      uploadLimitUnit: "Bs",
+      downloadLimit: 1, // Default 1 unit
+      downloadLimitUnit: "MBs",
+      uploadLimit: 1,
+      uploadLimitUnit: "MBs",
       port: generatePort(),
-      randId: generateId()
+      randId: generateId(),
+      maxUploadSize: 0,
+      maxUploadSizeUnit: "MBs", // Default unit for max upload size
+      maxDownloadableSize: 0,
+      maxDownloadableSizeUnit: "MBs", // Default unit for max downloadable size
+      minRatio: 0.8, // Default min ratio
+      maxRatio: 3.0 // Default max ratio
     },
   });
 
   useEffect(() => {
-    getGithubClients()
-      .then(setClients)
+    getGithubClients().then(setClients);
   }, []);
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
@@ -68,13 +78,18 @@ const ClientForm = () => {
       return;
     }
 
+    // Convert download and upload limits to bytes
     const downloadLimitInBytes = data.downloadLimit * units[data.downloadLimitUnit];
     const uploadLimitInBytes = data.uploadLimit * units[data.uploadLimitUnit];
+    const maxUploadSizeInBytes = data.maxUploadSize * units[data.maxUploadSizeUnit];
+    const maxDownloadableSizeInBytes = data.maxDownloadableSize * units[data.maxDownloadableSizeUnit];
 
     const asIclient: iClient = {
       ...data,
       availableUpload: uploadLimitInBytes,
       availableDownload: downloadLimitInBytes,
+      maxUploadSize: maxUploadSizeInBytes,
+      maxDownloadableSize: maxDownloadableSizeInBytes,
       peerId: client.peerID,
       userAgent: client["User-Agent"],
       _id: null
@@ -92,12 +107,13 @@ const ClientForm = () => {
 
   return (
     <>
-      {wasSent && <div className="toast toast-top">
-        <div className="alert alert-success">
-          <span>Client uploaded successfully.</span>
+      {wasSent && (
+        <div className="toast toast-top">
+          <div className="alert alert-success">
+            <span>Client uploaded successfully.</span>
+          </div>
         </div>
-      </div>
-      }
+      )}
 
       <form className="form-control flex" onSubmit={handleSubmit(onSubmit)}>
         <label className="label">
@@ -154,10 +170,63 @@ const ClientForm = () => {
         </select>
         {errors.selectedName && <span className="text-red-500">Field is required</span>}
 
-        <button type="submit" className="btn btn-primary mt-8">submit</button>
+        {/* New Fields */}
+        <label className="label">
+          <span className="label-text font-semibold">Maximum Upload Size</span>
+        </label>
+        <div className="flex">
+          <input type="number" {...register("maxUploadSize", { required: true })} className="input input-bordered" placeholder="Maximum Upload Size" />
+          <select {...register("maxUploadSizeUnit", { required: true })} className="select select-bordered">
+            <option value="Bs">Bs</option>
+            <option value="KBs">KBs</option>
+            <option value="MBs">MBs</option>
+            <option value="GBs">GBs</option>
+          </select>
+        </div>
+        {errors.maxUploadSize && <span className="text-red-500">Field is required</span>}
+
+        <label className="label">
+          <span className="label-text font-semibold">Maximum Downloadable Size</span>
+        </label>
+        <div className="flex">
+          <input type="number" {...register("maxDownloadableSize", { required: true })} className="input input-bordered" placeholder="Maximum Downloadable Size" />
+          <select {...register("maxDownloadableSizeUnit", { required: true })} className="select select-bordered">
+            <option value="Bs">Bs</option>
+            <option value="KBs">KBs</option>
+            <option value="MBs">MBs</option>
+            <option value="GBs">GBs</option>
+          </select>
+        </div>
+        {errors.maxDownloadableSize && <span className="text-red-500">Field is required</span>}
+
+        <label className="label">
+          <span className="label-text font-semibold">Minimum Ratio</span>
+        </label>
+        <input
+          type="number"
+          step={0.1}
+          {...register("minRatio")}
+          className="input input-bordered"
+          placeholder="Minimum Ratio"
+        />
+        {errors.minRatio && <span className="text-red-500">Field is required and must be between 0.8 and 3.0</span>}
+
+        <label className="label">
+          <span className="label-text font-semibold">Maximum Ratio</span>
+        </label>
+        <input
+          type="number"
+          step={0.1}
+          {...register("maxRatio")}
+          className="input input-bordered"
+          placeholder="Maximum Ratio"
+        />
+        {errors.maxRatio && <span className="text-red-500">Field is required and must be between 0.8 and 3.0</span>}
+
+        <button type="submit" className="btn btn-primary mt-8">Submit</button>
       </form>
     </>
   )
 };
 
-export default ClientForm
+export default ClientForm;

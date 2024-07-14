@@ -41,6 +41,10 @@ export interface iClient {
     peerId: string,  // A peer ID which is originated in the ORIGINAL torrent client. Example for one: -AZ3020-
     availableUpload: number,  // How much upload bandwidth is available in Bytes
     availableDownload: number,  // How much upload bandwidth is available in Bytes
+    maxRatio?: number,
+    minRatio?: number,
+    maxDownloadableSize?: number,
+    maxUploadSize?: number
 }
 
 export interface iClientSummarized {
