@@ -207,7 +207,7 @@ const ClientForm = () => {
           step={0.1}
           {...register("minRatio")}
           className="input input-bordered"
-          placeholder="Minimum Ratio"
+          placeholder="Minimum Ratio Per Torrent"
         />
         {errors.minRatio && <span className="text-red-500">Field is required and must be between 0.8 and 3.0</span>}
 
@@ -219,7 +219,7 @@ const ClientForm = () => {
           step={0.1}
           {...register("maxRatio")}
           className="input input-bordered"
-          placeholder="Maximum Ratio"
+          placeholder="Maximum Ratio Per Torrent"
         />
         {errors.maxRatio && <span className="text-red-500">Field is required and must be between 0.8 and 3.0</span>}
 

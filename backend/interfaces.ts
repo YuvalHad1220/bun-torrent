@@ -30,6 +30,10 @@ export interface iClient {
     uploadLimit: number,  // Limit in Bytes at how much client can upload
     downloadLimit: number,  // Limit in Bytes at how much client can download
     peerId: string,  // A peer ID which is originated in the ORIGINAL torrent client. Example for one: -AZ3020-
+    maxRatio?: number,
+    minRatio?: number,
+    maxDownloadableSize?: number,
+    maxUploadSize?: number
 }
 
 
