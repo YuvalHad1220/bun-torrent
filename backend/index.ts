@@ -62,7 +62,6 @@ const main = async () => {
       counter = 0;
       timeAlreadyWaited += loop_time;
     }
-    console.log({ counter });
     counter++;
     await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_LOOPS - timeAlreadyWaited)); // do that once every 30 seconds less the timeout time
   }

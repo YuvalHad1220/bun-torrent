@@ -42,8 +42,9 @@ const clientsGroup = (main: Elysia<any>, db: iDatabaseHandler) => {
 
         const summarized = Object.keys(torrentsInClients).map(clientKey => {
             const torrentList = torrentsInClients[clientKey];
+            const clientData = clients.find(client => client._id?.equals(clientKey));
             return {
-                clientName: clients.find(client => client._id?.equals(clientKey))?.name,
+                ...clientData!,
                 ...summarizeTorrents(torrentList)
             }
         })

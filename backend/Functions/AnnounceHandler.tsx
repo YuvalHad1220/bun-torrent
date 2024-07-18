@@ -53,7 +53,7 @@ const AnnounceHandler = async (
     });
 
     if (!response.ok) {
-      console.log(url);
+      console.log("error: ", url);
       return false;
     }
 
@@ -98,9 +98,6 @@ const announceSaveAdapter = async (
     client
   );
   if (announceResult) {
-    if (announcementType === "resume") {
-      console.log(announcedTorrentsToSave.size);
-    }
     announcedTorrentsToSave.add(torrent);
   }
   return announceResult;

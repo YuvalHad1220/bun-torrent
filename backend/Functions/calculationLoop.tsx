@@ -28,9 +28,11 @@ const handleClientTorrents = (
 
   // Check if maxDownloadableSize is defined and if it is greater than or equal to the downloaded of all finished torrents
   const totalTorrentSize = torrentsOfClient.reduce(
-    (acc, torrent) => acc + (torrent.isFinishAnnounced ? torrent.downloaded : 0),
+    (acc, torrent) =>
+      acc + (torrent.isFinishAnnounced ? torrent.downloaded : 0),
     0
   );
+
   const canDownloadBySize =
     !client.maxDownloadableSize ||
     client.maxDownloadableSize >= totalTorrentSize;
@@ -40,6 +42,12 @@ const handleClientTorrents = (
     (acc, torrent) => acc + torrent.uploaded,
     0
   );
+  console.log(
+    totalTorrentSize > client.maxDownloadableSize,
+    (100 * totalTorrentSize) / (client.maxDownloadableSize || 1),
+    client.name
+  );
+
   const canUploadBySize =
     !client.maxUploadSize || client.maxUploadSize >= totalUploadedSizeForClient;
 
@@ -126,4 +134,3 @@ export const calculationLoop = (clients: iClient[], torrents: iTorrent[]) => {
     handleClientTorrents(client, torrentsOfClient);
   });
 };
-

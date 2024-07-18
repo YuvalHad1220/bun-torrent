@@ -18,7 +18,8 @@ export interface iTorrent {
     tempTakenDownload: number,
     tempTakenUpload: number,
     clientId: mongoose.Types.ObjectId | null,
-    rssId?: mongoose.Types.ObjectId
+    rssId?: mongoose.Types.ObjectId,
+    retryCount?: number;
 }
 
 export interface iClient {
