@@ -1,7 +1,5 @@
-import mongoose from "mongoose"
-
 export interface iTorrent {
-    _id: mongoose.Types.ObjectId | null,
+    _id: string | null,
     name: string,
     size: number,
     seeders: number,
@@ -17,21 +15,21 @@ export interface iTorrent {
     uploaded: number,
     tempTakenDownload: number,
     tempTakenUpload: number,
-    clientId: mongoose.Types.ObjectId | null
+    clientId: string | null
 }
 
 export interface iRSS {
-    _id?: mongoose.Types.ObjectId,
+    _id?: string,
     name: string,
     rssLink: string,
-    clientId: mongoose.Types.ObjectId,
+    clientId: string,
     maxDownloadSpeed: number,
     maxUploadSpeed: number,
     latestUpdateDate?: Date
 }
 
 export interface iClient {
-    _id: mongoose.Types.ObjectId | null,
+    _id: string | null,
     name: string,  // How client will be represented to the user
     randId: string,  // Random ID constructed from 12 random chars
     userAgent: string,  // The user agent that will report to the tracker
@@ -78,10 +76,10 @@ export interface iDecodedTorrentFile {
 export interface iDatabaseHandler {
     addClient: (client: iClient) => Promise<boolean>,
     addTorrent: (torrent: iTorrent) => Promise<boolean>,
-    getClients: (id? : mongoose.Types.ObjectId) => Promise<iClient[]>,
-    getTorrents: (id? : mongoose.Types.ObjectId) => Promise<iTorrent[]>,
-    deleteTorrent: (id : mongoose.Types.ObjectId) => Promise<boolean>,
-    deleteClient: (id : mongoose.Types.ObjectId) => Promise<boolean>,
+    getClients: (id? : string) => Promise<iClient[]>,
+    getTorrents: (id? : string) => Promise<iTorrent[]>,
+    deleteTorrent: (id : string) => Promise<boolean>,
+    deleteClient: (id : string) => Promise<boolean>,
     updateTorrents: (torrents: Set<iTorrent>) => Promise<boolean>
 }
 

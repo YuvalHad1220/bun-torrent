@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { iClient } from "../interfaces";
 import { SubmitHandler } from "react-hook-form";
 import { getClients, postRss } from "./assets/RequestsHandler";
-import mongoose from "mongoose";
 
 type FormInputs = {
   rssLink: string,
@@ -64,7 +63,7 @@ const RSSForm = () => {
       rssLink,
       name,
       maxDownloadSpeed,
-      clientId: new mongoose.Types.ObjectId(client._id!),
+      clientId: client._id!,
       maxUploadSpeed,
     })
   }

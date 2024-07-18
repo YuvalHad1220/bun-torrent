@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
 import { iClient, iTorrent } from "../interfaces";
 
+const SLEEP_TIME = 30;
+
 // Function to handle a single client and its torrents
 const handleClientTorrents = (
   client: iClient,
   torrentsOfClient: iTorrent[]
 ) => {
-  const clientDownloadBandwidth = client.downloadLimit * 30;
-  const clientUploadBandwidth = client.uploadLimit * 30;
+  const clientDownloadBandwidth = client.downloadLimit * SLEEP_TIME;
+  const clientUploadBandwidth = client.uploadLimit * SLEEP_TIME;
   let tempTakenDownload = 0;
   let tempTakenUpload = 0;
 
@@ -42,17 +44,17 @@ const handleClientTorrents = (
 
     if (canDownload && canDownloadByRatio) {
       if (torrent.seeders < 3) {
-        downloadable = Math.random() * 1000 * 4 * 30;
+        downloadable = Math.random() * 1000 * 4 * SLEEP_TIME;
       } else {
-        downloadable = Math.random() * torrent.maxDownloadSpeed * 30;
+        downloadable = Math.random() * torrent.maxDownloadSpeed * SLEEP_TIME;
       }
     }
 
     if (canUpload && canUploadByRatio) {
       if (torrent.leechers < 3) {
-        uploadable = Math.random() * 1000 * 30;
+        uploadable = Math.random() * 1000 * SLEEP_TIME;
       } else {
-        uploadable = Math.random() * torrent.maxUploadSpeed * 30;
+        uploadable = Math.random() * torrent.maxUploadSpeed * SLEEP_TIME;
       }
     }
 

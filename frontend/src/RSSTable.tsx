@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "react-query";
-import mongoose from "mongoose";
 import { formatBytes } from "./assets/formatBytes";
 
 interface iRSS {
-    _id: mongoose.Types.ObjectId | undefined,
+    _id: string | undefined,
     name: string,
     rssLink: string,
-    clientId: mongoose.Types.ObjectId,
+    clientId: string,
     maxDownloadSpeed: number,
     maxUploadSpeed: number,
     latestUpdateDate: Date | undefined,
@@ -56,7 +55,7 @@ const RSSTable = () => {
                     <tbody>
                         {!isLoading && data?.map(rss => {
                             return (
-                                <tr key={rss._id?.toString()}>
+                                <tr key={rss._id}>
                                     <td></td>
                                     <td>{rss.name}</td>
                                     <td>{rss.rssLink}</td>

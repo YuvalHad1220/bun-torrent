@@ -48,7 +48,7 @@ const TorrentForm = () => {
         const uploadSpeedInBytes = data.uploadSpeed * units[data.uploadSpeedUnit];
         const downloadSpeedInBytes = data.downloadSpeed * units[data.downloadSpeedUnit];
 
-        const result = await postTorrents(data.files, downloadSpeedInBytes, uploadSpeedInBytes, client._id!.toString(), data.progress);
+        const result = await postTorrents(data.files, downloadSpeedInBytes, uploadSpeedInBytes, client._id!, data.progress);
         if (result) {
             setIsSent(true);
             reset();
