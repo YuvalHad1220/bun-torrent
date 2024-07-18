@@ -1,58 +1,87 @@
+import {
+  Routes,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
 import TorrentForm from "./TorrentForm.tsx";
 import ClientForm from "./ClientForm.tsx";
-import { useState } from "react";
-import classNames from "classnames";
 import ClientTable from "./ClientTable.tsx";
 import TorrentTable from "./TorrentTable.tsx";
-import { QueryClient, QueryClientProvider } from "react-query";
 import RSSForm from "./RSSForm.tsx";
 import RSSTable from "./RSSTable.tsx";
 
 function App() {
-  type DISPLAYABLES = "TORRENT_FORM" | "TORRENT_TABLE" | "CLIENT_FORM" | "CLIENT_TABLE" | "RSS_FORM" | "RSS_TABLE"
-  const [displayed, setDisplayed] = useState<DISPLAYABLES>("TORRENT_TABLE");
-  const queryClient = new QueryClient()
-
-  const addSections = (
-    <div className="flex flex-col gap-3 p-2 mt-auto">
-      <button onClick={() => setDisplayed("TORRENT_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "TORRENT_FORM" })}>Add Torrents</button>
-      <button onClick={() => setDisplayed("CLIENT_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "CLIENT_FORM" })}>Add Client</button>
-      <button onClick={() => setDisplayed("RSS_FORM")} className={classNames('btn', 'btn-outline', 'rounded-2xl', { 'btn-primary': displayed === "CLIENT_FORM" })}>Add RSS</button>
-    </div>
-  );
-
-  const displayTableSections = (
-    <div className="flex flex-col gap-3 p-2 mb-auto">
-      <button onClick={() => setDisplayed("TORRENT_TABLE")} className={classNames('btn', 'rounded-2xl', 'hover:bg-primary-focus', { 'btn-primary': displayed === "TORRENT_TABLE" })}>Torrents</button>
-      <button onClick={() => setDisplayed("CLIENT_TABLE")} className={classNames('btn', 'rounded-2xl', 'hover:bg-primary-focus', { 'btn-primary': displayed === "CLIENT_TABLE" })}>Clients</button>
-      <button onClick={() => setDisplayed("RSS_TABLE")} className={classNames('btn', 'rounded-2xl', 'hover:bg-primary-focus', { 'btn-primary': displayed === "RSS_TABLE" })}>RSS Feed</button>
-
-    </div>
-  );
-
-  const componentMap: Record<DISPLAYABLES, React.ReactNode> = {
-    "TORRENT_FORM": <TorrentForm />,
-    "TORRENT_TABLE": <TorrentTable />,
-    "CLIENT_FORM": <ClientForm />,
-    "CLIENT_TABLE": <ClientTable />,
-    "RSS_FORM": <RSSForm />,
-    "RSS_TABLE": <RSSTable />
-};
+  const location = useLocation();
 
   return (
-    <QueryClientProvider client={queryClient}>
       <div className="grid grid-cols-5 h-screen gap-3 p-3">
         <div className="col-span-4 rounded-2xl shadow-2xl bg-base-300 h-full p-3">
-          {componentMap[displayed]}
+          <Routes>
+            <Route path="/" element={<TorrentTable />} />
+            <Route path="/torrent-form" element={<TorrentForm />} />
+            <Route path="/client-form" element={<ClientForm />} />
+            <Route path="/rss-form" element={<RSSForm />} />
+            <Route path="/client-table" element={<ClientTable />} />
+            <Route path="/rss-table" element={<RSSTable />} />
+          </Routes>
         </div>
         <div className="col-span-1 rounded-2xl shadow-2xl bg-base-300 h-full flex flex-col">
-          {displayTableSections}
-          {addSections}
+          <div className="flex flex-col gap-3 p-2 mb-auto">
+            <Link
+              to="/"
+              className={`btn rounded-2xl hover:bg-primary-focus ${
+                location.pathname === "/" ? "btn-primary" : ""
+              }`}
+            >
+              Torrents
+            </Link>
+            <Link
+              to="/client-table"
+              className={`btn rounded-2xl hover:bg-primary-focus ${
+                location.pathname === "/client-table" ? "btn-primary" : ""
+              }`}
+            >
+              Clients
+            </Link>
+            <Link
+              to="/rss-table"
+              className={`btn rounded-2xl hover:bg-primary-focus ${
+                location.pathname === "/rss-table" ? "btn-primary" : ""
+              }`}
+            >
+              RSS Feed
+            </Link>
+          </div>
+          <div className="flex flex-col gap-3 p-2 mt-auto">
+            <Link
+              to="/torrent-form"
+              className={`btn btn-outline rounded-2xl hover:bg-primary-focus ${
+                location.pathname === "/torrent-form" ? "btn-primary" : ""
+              }`}
+            >
+              Add Torrents
+            </Link>
+            <Link
+              to="/client-form"
+              className={`btn btn-outline rounded-2xl hover:bg-primary-focus ${
+                location.pathname === "/client-form" ? "btn-primary" : ""
+              }`}
+            >
+              Add Client
+            </Link>
+            <Link
+              to="/rss-form"
+              className={`btn btn-outline rounded-2xl hover:bg-primary-focus ${
+                location.pathname === "/rss-form" ? "btn-primary" : ""
+              }`}
+            >
+              Add RSS
+            </Link>
+          </div>
         </div>
       </div>
-    </QueryClientProvider>
-
-  )
+  );
 }
 
-export default App
+export default App;

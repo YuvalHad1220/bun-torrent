@@ -12,7 +12,8 @@ const theads = {
     "Download Speed": "downloadSpeed",
     "Upload Speed": "uploadSpeed",
     "Torrents Count": "torrentsCount",
-    "Size": "size"
+    "Size": "size",
+    "Max Downloadable": "maxDownloadableSize"
 };
 
 
@@ -32,8 +33,8 @@ const ClientTable = () => {
                 </thead>
                 <tbody>
                     {clients?.map((client: iClientSummarized) => (
-                        <tr key={client.clientName}>
-                            <td>{client.clientName}</td>
+                        <tr key={client.name}>
+                            <td>{client.name}</td>
                             <td>{client.seeders}</td>
                             <td>{client.leechers}</td>
                             <td>{formatBytes(client.downloaded)}</td>
@@ -42,6 +43,7 @@ const ClientTable = () => {
                             <td>{formatBytes(client.uploadSpeed / 30)}/s</td>
                             <td>{client.torrentsCount}</td>
                             <td>{formatBytes(client.size)}</td>
+                            <td>{client.maxDownloadableSize ? formatBytes(client.maxDownloadableSize) : "N/A"}</td>
                         </tr>
                     ))}
                 </tbody>

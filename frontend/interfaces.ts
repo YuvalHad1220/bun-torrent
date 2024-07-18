@@ -45,8 +45,8 @@ export interface iClient {
     maxUploadSize?: number
 }
 
-export interface iClientSummarized {
-    clientName: string;
+export interface iClientSummarized extends iClient{
+    name: string;
     seeders: number;
     leechers: number;
     downloaded: number;
