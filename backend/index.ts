@@ -5,13 +5,13 @@ import { announceLoop } from "./Functions/AnnounceHandler";
 import cors from "@elysiajs/cors";
 import torrentGroup from "./routes/Torrent";
 import clientsGroup from "./routes/Client";
-import { caclulationLoop } from "./Functions/calculationLoop";
+import { calculationLoop } from "./Functions/calculationLoop";
 import executeTasksWithDelay from "./Functions/TasksWithDelay";
 import rssGroup from "./routes/RSS";
 import { RSSLoop } from "./Functions/RSSHandler";
 
 
-const TIME_TO_TIMEOUT = 2500
+const TIME_TO_TIMEOUT = 10000
 const TIME_BETWEEN_LOOPS = 30000
 const torrentLoop = async (db: iDatabaseHandler) => {
   const torrents = await db.getTorrents();
@@ -23,7 +23,7 @@ const torrentLoop = async (db: iDatabaseHandler) => {
     announcedTorrentsToSave,
     torrentQueueToSave,
   } = announceLoop(torrents, clients);
-  caclulationLoop(clients, torrents);
+  calculationLoop(clients, torrents);
   console.log("tasks to announce:", torrentTasksToAnnounce.length);
   await executeTasksWithDelay(torrentTasksToAnnounce, TIME_TO_TIMEOUT);
 

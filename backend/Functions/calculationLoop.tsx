@@ -13,36 +13,45 @@ const handleClientTorrents = (
   let tempTakenDownload = 0;
   let tempTakenUpload = 0;
 
-  // Check if maxDownloadableSize is defined and if it is greater than or equal to the size of all torrents
+  // Calculate total downloaded and uploaded size for the client
+  let totalDownloadedSize = 0;
+  let totalUploadedSize = 0;
+
+  for (let torrent of torrentsOfClient) {
+    totalDownloadedSize += torrent.downloaded;
+    totalUploadedSize += torrent.uploaded;
+  }
+
+  // Calculate the current client ratio
+  const clientRatio =
+    totalDownloadedSize > 0 ? totalUploadedSize / totalDownloadedSize : 10;
+
+  // Check if maxDownloadableSize is defined and if it is greater than or equal to the downloaded of all finished torrents
   const totalTorrentSize = torrentsOfClient.reduce(
-    (acc, torrent) => acc + torrent.size,
+    (acc, torrent) => acc + (torrent.isFinishAnnounced ? torrent.downloaded : 0),
     0
   );
-  const canDownload =
+  const canDownloadBySize =
     !client.maxDownloadableSize ||
-    client.maxDownloadableSize < totalTorrentSize;
+    client.maxDownloadableSize >= totalTorrentSize;
 
   // Check if maxUploadSize is defined and if it is greater than or equal to the uploaded size of all torrents
-  const totalUploadedSize = torrentsOfClient.reduce(
+  const totalUploadedSizeForClient = torrentsOfClient.reduce(
     (acc, torrent) => acc + torrent.uploaded,
     0
   );
-  const canUpload =
-    !client.maxUploadSize || client.maxUploadSize > totalUploadedSize;
+  const canUploadBySize =
+    !client.maxUploadSize || client.maxUploadSize >= totalUploadedSizeForClient;
+
+  // Check if the client ratio is within acceptable bounds
+  const canDownloadByRatio = !client.minRatio || clientRatio >= client.minRatio;
+  const canUploadByRatio = !client.maxRatio || clientRatio <= client.maxRatio;
 
   for (let torrent of torrentsOfClient) {
     let downloadable = 0;
     let uploadable = 0;
 
-    // Calculate the current ratio
-    const ratio =
-      torrent.downloaded > 0 ? torrent.uploaded / torrent.downloaded : 0;
-
-    // Check if the ratio is within acceptable bounds
-    const canDownloadByRatio = !client.minRatio || ratio >= client.minRatio;
-    const canUploadByRatio = !client.maxRatio || ratio <= client.maxRatio;
-
-    if (canDownload && canDownloadByRatio) {
+    if (canDownloadBySize && canDownloadByRatio) {
       if (torrent.seeders < 3) {
         downloadable = Math.random() * 1000 * 4 * SLEEP_TIME;
       } else {
@@ -50,7 +59,7 @@ const handleClientTorrents = (
       }
     }
 
-    if (canUpload && canUploadByRatio) {
+    if (canUploadBySize && canUploadByRatio) {
       if (torrent.leechers < 3) {
         uploadable = Math.random() * 1000 * SLEEP_TIME;
       } else {
@@ -95,12 +104,26 @@ const handleClientTorrents = (
   }
 };
 
-// Main loop for a list of clients and torrents
+// Main loop for a list of clients and torrents using maps for efficient access
 export const calculationLoop = (clients: iClient[], torrents: iTorrent[]) => {
-  for (let client of clients) {
-    const torrentsOfClient = torrents.filter((torrent) =>
+  // Map to store clients by _id.toString()
+  const clientMap = new Map<string, iClient>();
+  // Map to store torrents by client._id.toString()
+  const torrentsMap = new Map<string, iTorrent[]>();
+
+  // Populate clientMap and torrentsMap
+  clients.forEach((client) => {
+    clientMap.set(client._id!.toString(), client);
+    const clientTorrents = torrents.filter((torrent) =>
       torrent.clientId?.equals(client._id)
     );
+    torrentsMap.set(client._id!.toString(), clientTorrents);
+  });
+
+  // Iterate over clients and handle torrents using maps
+  clientMap.forEach((client, clientId) => {
+    const torrentsOfClient = torrentsMap.get(clientId) || [];
     handleClientTorrents(client, torrentsOfClient);
-  }
+  });
 };
+
