@@ -36,6 +36,20 @@ export const handleRss = async (rss: iRSS, db: iDatabaseHandler) => {
   let entries: RSSItem[] = [];
   let latestEntryDate: Date | undefined = rss.latestUpdateDate;
 
+  const torrents = (await db.getTorrents()).filter(item => item.clientId?.equals(rss.clientId));
+  const client = (await db.getClients(rss.clientId))[0]
+    // Check if maxDownloadableSize is defined and if it is greater than or equal to the downloaded of all finished torrents
+    const totalTorrentSize = torrents.reduce(
+      (acc, torrent) => acc + (torrent.isFinishAnnounced ? torrent.downloaded : 0),
+      0
+    );
+
+  if (client.maxDownloadableSize && client.maxDownloadableSize <= totalTorrentSize){
+    console.log("cant download more RSSes!")
+    return
+  }
+
+  
   try {
     const response = await fetch(rss.rssLink);
     if (!response.ok) {
