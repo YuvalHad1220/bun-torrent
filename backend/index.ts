@@ -11,12 +11,11 @@ import rssGroup from "./routes/RSS";
 import { RSSLoop } from "./Functions/RSSHandler";
 
 
-const TIME_TO_TIMEOUT = 10000
+const TIME_TO_TIMEOUT = 8000
 const TIME_BETWEEN_LOOPS = 30000
 const torrentLoop = async (db: iDatabaseHandler) => {
   const torrents = await db.getTorrents();
   const clients = await db.getClients();
-
   // we will announce, and then save to the db the needed items
   const {
     torrentTasksToAnnounce,

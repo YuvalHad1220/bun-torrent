@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { iClient, iTorrent } from "../interfaces";
 
 const SLEEP_TIME = 30;
@@ -23,8 +22,8 @@ const handleClientTorrents = (
   }
 
   // Calculate the current client ratio
-  const clientRatio =
-    totalDownloadedSize > 0 ? totalUploadedSize / totalDownloadedSize : 10;
+  // const clientRatio =
+  //   totalDownloadedSize > 0 ? totalUploadedSize / totalDownloadedSize : 10;
 
   // Check if maxDownloadableSize is defined and if it is greater than or equal to the downloaded of all finished torrents
   const totalTorrentSize = torrentsOfClient.reduce(
@@ -52,14 +51,17 @@ const handleClientTorrents = (
     !client.maxUploadSize || client.maxUploadSize >= totalUploadedSizeForClient;
 
   // Check if the client ratio is within acceptable bounds
-  const canDownloadByRatio = !client.minRatio || clientRatio >= client.minRatio;
-  const canUploadByRatio = !client.maxRatio || clientRatio <= client.maxRatio;
+  // const canDownloadByRatio = !client.minRatio || clientRatio >= client.minRatio;
+  // const canUploadByRatio = !client.maxRatio || clientRatio <= client.maxRatio;
 
   for (let torrent of torrentsOfClient) {
     let downloadable = 0;
     let uploadable = 0;
+    const isInDownloadProcess =
+      !torrent.isFinishAnnounced && torrent.isStartAnnounced;
 
-    if (canDownloadBySize && canDownloadByRatio) {
+    // if (canDownloadBySize && canDownloadByRatio) {
+    if (isInDownloadProcess || canDownloadBySize) {
       if (torrent.seeders < 3) {
         downloadable = Math.random() * 1000 * 4 * SLEEP_TIME;
       } else {
@@ -67,7 +69,8 @@ const handleClientTorrents = (
       }
     }
 
-    if (canUploadBySize && canUploadByRatio) {
+    // if (canUploadBySize && canUploadByRatio) {
+    if (canUploadBySize) {
       if (torrent.leechers < 3) {
         uploadable = Math.random() * 1000 * SLEEP_TIME;
       } else {

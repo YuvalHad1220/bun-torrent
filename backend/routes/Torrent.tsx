@@ -11,7 +11,8 @@ const torrentGroup = (main: Elysia<any>, db: iDatabaseHandler) => {
         let torrentsToReturn;
         const pageIndex = parseInt(handle.query.pageIndex ?? "-1");
         const rowsPerPage = parseInt(handle.query.rowsPerPage ?? "-1");
-        if (pageIndex + rowsPerPage > 0) {
+        // if (pageIndex + rowsPerPage > 0) {
+        if (false) {
           torrentsToReturn = torrents.slice(
             pageIndex * rowsPerPage,
             (pageIndex + 1) * rowsPerPage
