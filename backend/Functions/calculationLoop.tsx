@@ -1,7 +1,6 @@
 import { CALC_OFFSET_IN_SECONDS } from "../consts";
 import { iClient, iTorrent } from "../interfaces";
 
-
 // Function to handle a single client and its torrents
 const handleClientTorrents = (
   client: iClient,
@@ -9,6 +8,9 @@ const handleClientTorrents = (
 ) => {
   const clientDownloadBandwidth = client.downloadLimit * CALC_OFFSET_IN_SECONDS;
   const clientUploadBandwidth = client.uploadLimit * CALC_OFFSET_IN_SECONDS;
+  torrentsOfClient.sort((a, b) =>
+    a.isStartAnnounced === b.isStartAnnounced ? 0 : a.isStartAnnounced ? -1 : 1
+  );
   let tempTakenDownload = 0;
   let tempTakenUpload = 0;
 
@@ -65,7 +67,8 @@ const handleClientTorrents = (
       if (torrent.seeders < 3) {
         downloadable = Math.random() * 1000 * 4 * CALC_OFFSET_IN_SECONDS;
       } else {
-        downloadable = Math.random() * torrent.maxDownloadSpeed * CALC_OFFSET_IN_SECONDS;
+        downloadable =
+          Math.random() * torrent.maxDownloadSpeed * CALC_OFFSET_IN_SECONDS;
       }
     }
 
@@ -74,7 +77,8 @@ const handleClientTorrents = (
       if (torrent.leechers < 3) {
         uploadable = Math.random() * 1000 * CALC_OFFSET_IN_SECONDS;
       } else {
-        uploadable = Math.random() * torrent.maxUploadSpeed * CALC_OFFSET_IN_SECONDS;
+        uploadable =
+          Math.random() * torrent.maxUploadSpeed * CALC_OFFSET_IN_SECONDS;
       }
     }
 

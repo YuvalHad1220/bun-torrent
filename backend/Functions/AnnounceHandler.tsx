@@ -123,10 +123,8 @@ export const announceLoop = (torrents: iTorrent[], clients: iClient[]) => {
   ).length;
   console.log({ failed: failedCount });
 
-  // Ensure we only handle up to MAX_TORRENTS torrents
-  const limitedTorrents = torrents.slice(0, MAX_TORRENTS);
 
-  for (let torrent of limitedTorrents) {
+  for (let torrent of torrents) {
     if (
       torrent.failureCount &&
       torrent.failureCount <= MAX_FAIL_THRESHOLD &&
