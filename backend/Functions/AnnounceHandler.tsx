@@ -5,13 +5,9 @@ import {
   iDecodedAnnounce,
   iTorrent,
 } from "../interfaces";
+import { ANNOUNCE_INTERVAL, DISPLAY_ERROR, MAX_FAIL_THRESHOLD, MAX_TORRENTS, MIN_FAIL_THRESHOLD, SAVE_INTERVAL } from "../consts";
 
-const MAX_FAIL_THRES = 30;
-const MIN_FAIL_THRES = 1;
-const DISPLAY_ERROR = false;
 
-// if we change our upload \ download then we need to save the updated state to the database; else, it means that we dont download\upload and we didnt change state so we dont save to db.
-// any changes that happen because of announcement will already be saved to the db on announcement
 const needsToBeSaved = (torrent: iTorrent): boolean => {
   return torrent.tempTakenDownload > 0 || torrent.tempTakenUpload > 0;
 };
@@ -27,32 +23,25 @@ const AnnounceHandler = async (
   torrent: iTorrent,
   client: iClient
 ): Promise<boolean> => {
-  let query =
-    "?info_hash=" +
-    escape(torrent.infoHash.toString("binary")) +
-    "&peer_id=" +
-    encodeURI(client.peerId + client.randId) +
-    "&port=" +
-    client.port +
-    "&uploaded=" +
-    torrent.uploaded +
-    "&downloaded=" +
-    torrent.downloaded +
-    "&left=" +
-    (torrent.size - torrent.downloaded) +
-    "&compact=" +
-    1 +
-    "&numwant=" +
-    200 +
-    "&supportcrypto=" +
-    1 +
-    "&no_peer_id=" +
-    1;
+  const query = new URLSearchParams({
+    info_hash: escape(torrent.infoHash.toString("binary")),
+    peer_id: encodeURI(client.peerId + client.randId),
+    port: client.port.toString(),
+    uploaded: torrent.uploaded.toString(),
+    downloaded: torrent.downloaded.toString(),
+    left: (torrent.size - torrent.downloaded).toString(),
+    compact: "1",
+    numwant: "200",
+    supportcrypto: "1",
+    no_peer_id: "1",
+  });
 
-  if (announcementType && announcementType !== "resume")
-    query += "&event=" + announcementType;
+  if (announcementType && announcementType !== "resume") {
+    query.append("event", announcementType);
+  }
 
-  const url = torrent.announceUrl + query;
+  const url = `${torrent.announceUrl}?${query.toString()}`;
+
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -63,19 +52,20 @@ const AnnounceHandler = async (
     });
 
     if (!response.ok) {
-      return onFailedAnnounce(torrent, "error: " + url);
+      return onFailedAnnounce(torrent, `error: ${url}`);
     }
 
-    const d = Buffer.from(await response.arrayBuffer());
-    if (!d.length) return onFailedAnnounce(torrent, "no decode length");
-    const decoded = decode(d);
+    const data = Buffer.from(await response.arrayBuffer());
+    if (!data.length) return onFailedAnnounce(torrent, "no decode length");
+
+    const decoded = decode(data);
     const resp = decoded as iDecodedAnnounce;
 
     if (resp["failure reason"]) {
       return onFailedAnnounce(torrent, url);
     }
 
-    torrent.timeToAnnounce = resp.interval || 1800;
+    torrent.timeToAnnounce = resp.interval || ANNOUNCE_INTERVAL;
     torrent.seeders = resp.complete || 0;
     torrent.leechers = resp.incomplete || 0;
     if (torrent.failureCount) delete torrent.failureCount;
@@ -87,14 +77,8 @@ const AnnounceHandler = async (
   } catch (err) {
     return onFailedAnnounce(torrent, err.message);
   }
-
-  // // if torrent is done, and we dont have anyone to seed to twice in a row - theres no need to save to db ( becasue we know the upload didnt change )
-  // // if torrent is not done but theres no one to download from  twice in a row - theres no need to save to the db (because we know that the download didnt change)
-  // if (announcementType === "resume" && (torrent.isFinishAnnounced && torrent.leechers === 0 && prevState.leechers === 0 || torrent.seeders === 0 && prevState.seeders === 0))
-  //     return false;
 };
 
-export default AnnounceHandler;
 const announcedTorrentsToSave = new Set<iTorrent>();
 
 const announceSaveAdapter = async (
@@ -112,7 +96,8 @@ const announceSaveAdapter = async (
   }
   return announceResult;
 };
-function groupBy<T>(array: T[], key: keyof T): Object {
+
+function groupBy<T>(array: T[], key: keyof T): Record<any, T[]> {
   return array.reduce((result, element) => {
     const keyValue = element[key];
     if (!result[keyValue]) {
@@ -124,53 +109,53 @@ function groupBy<T>(array: T[], key: keyof T): Object {
 }
 
 export const announceLoop = (torrents: iTorrent[], clients: iClient[]) => {
-  // will contain all the torrents that were announced and not saved
-  // will save the torrents every 15 minutes
   const torrentQueueToSave = new Set<iTorrent>();
   const torrentTasksToAnnounce: Promise<any>[] = [];
 
   const clientsRecord = groupBy(clients, "_id");
-  const failed = torrents.filter(item => Boolean(item.failureCount && item.failureCount >= MIN_FAIL_THRES && item.failureCount <= MAX_FAIL_THRES)).length;
-  console.log({failed})
+  const failedCount = torrents.filter(
+    (item) =>
+      Boolean(
+        item.failureCount &&
+          item.failureCount >= MIN_FAIL_THRESHOLD &&
+          item.failureCount <= MAX_FAIL_THRESHOLD
+      )
+  ).length;
+  console.log({ failed: failedCount });
 
-  for (let torrent of torrents) {
+  // Ensure we only handle up to MAX_TORRENTS torrents
+  const limitedTorrents = torrents.slice(0, MAX_TORRENTS);
+
+  for (let torrent of limitedTorrents) {
     if (
       torrent.failureCount &&
-      torrent.failureCount <= MAX_FAIL_THRES &&
-      torrent.failureCount >= MIN_FAIL_THRES
+      torrent.failureCount <= MAX_FAIL_THRESHOLD &&
+      torrent.failureCount >= MIN_FAIL_THRESHOLD
     ) {
       onFailedAnnounce(torrent);
-      continue; // Move to the next torrent
+      continue;
     }
 
-    const client =
-      torrent.clientId && clientsRecord[torrent.clientId!.toString()];
+    const client = torrent.clientId
+      ? clientsRecord[torrent.clientId.toString()]
+      : undefined;
     if (!client) continue;
 
-    // Start announce
+    const announceAndSave = async (type: announceType) => {
+      const result = await announceSaveAdapter(type, torrent, client);
+      if (needsToBeSaved(torrent)) torrentQueueToSave.add(torrent);
+      return result;
+    };
+
     if (!torrent.isStartAnnounced) {
-      torrentTasksToAnnounce.push(
-        announceSaveAdapter("started", torrent, client)
-      );
-    }
-    // Finish announce
-    else if (
-      torrent.downloaded / torrent.size >= 1 &&
-      !torrent.isFinishAnnounced
-    ) {
-      torrentTasksToAnnounce.push(
-        announceSaveAdapter("completed", torrent, client)
-      );
-    }
-    // Resume announce (not need to be saved since this is not special occasion)
-    else if (torrent.timeToAnnounce <= 0) {
-      torrentTasksToAnnounce.push(
-        announceSaveAdapter("resume", torrent, client)
-      );
+      torrentTasksToAnnounce.push(announceAndSave("started"));
+    } else if (torrent.downloaded / torrent.size >= 1 && !torrent.isFinishAnnounced) {
+      torrentTasksToAnnounce.push(announceAndSave("completed"));
+    } else if (torrent.timeToAnnounce <= 0) {
+      torrentTasksToAnnounce.push(announceSaveAdapter("resume", torrent, client));
     }
 
-    // Saving to db every 5 minutes
-    if (torrent.timeToAnnounce % (5 * 60) === 0) {
+    if (torrent.timeToAnnounce % SAVE_INTERVAL === 0) {
       if (needsToBeSaved(torrent)) torrentQueueToSave.add(torrent);
     }
 
@@ -183,3 +168,4 @@ export const announceLoop = (torrents: iTorrent[], clients: iClient[]) => {
     torrentQueueToSave,
   };
 };
+export default AnnounceHandler;

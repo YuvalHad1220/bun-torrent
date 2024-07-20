@@ -1,14 +1,14 @@
+import { CALC_OFFSET_IN_SECONDS } from "../consts";
 import { iClient, iTorrent } from "../interfaces";
 
-const SLEEP_TIME = 30;
 
 // Function to handle a single client and its torrents
 const handleClientTorrents = (
   client: iClient,
   torrentsOfClient: iTorrent[]
 ) => {
-  const clientDownloadBandwidth = client.downloadLimit * SLEEP_TIME;
-  const clientUploadBandwidth = client.uploadLimit * SLEEP_TIME;
+  const clientDownloadBandwidth = client.downloadLimit * CALC_OFFSET_IN_SECONDS;
+  const clientUploadBandwidth = client.uploadLimit * CALC_OFFSET_IN_SECONDS;
   let tempTakenDownload = 0;
   let tempTakenUpload = 0;
 
@@ -58,23 +58,23 @@ const handleClientTorrents = (
     let downloadable = 0;
     let uploadable = 0;
     const isInDownloadProcess =
-      !torrent.isFinishAnnounced && torrent.isStartAnnounced;
+      torrent.downloaded > 0 && !torrent.isFinishAnnounced;
 
     // if (canDownloadBySize && canDownloadByRatio) {
     if (isInDownloadProcess || canDownloadBySize) {
       if (torrent.seeders < 3) {
-        downloadable = Math.random() * 1000 * 4 * SLEEP_TIME;
+        downloadable = Math.random() * 1000 * 4 * CALC_OFFSET_IN_SECONDS;
       } else {
-        downloadable = Math.random() * torrent.maxDownloadSpeed * SLEEP_TIME;
+        downloadable = Math.random() * torrent.maxDownloadSpeed * CALC_OFFSET_IN_SECONDS;
       }
     }
 
     // if (canUploadBySize && canUploadByRatio) {
     if (canUploadBySize) {
       if (torrent.leechers < 3) {
-        uploadable = Math.random() * 1000 * SLEEP_TIME;
+        uploadable = Math.random() * 1000 * CALC_OFFSET_IN_SECONDS;
       } else {
-        uploadable = Math.random() * torrent.maxUploadSpeed * SLEEP_TIME;
+        uploadable = Math.random() * torrent.maxUploadSpeed * CALC_OFFSET_IN_SECONDS;
       }
     }
 

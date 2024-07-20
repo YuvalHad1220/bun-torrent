@@ -1,0 +1,10 @@
+export const TIME_TO_TIMEOUT = 4000;
+export const TIME_BETWEEN_LOOPS = 30000;
+export const RSS_TIME_TO_TIMEOUT = 10000;
+export const CALC_OFFSET_IN_SECONDS = 30;
+export const MAX_FAIL_THRESHOLD = 30;
+export const MIN_FAIL_THRESHOLD = 1;
+export const DISPLAY_ERROR = false;
+export const ANNOUNCE_INTERVAL = 1800; // Default announce interval in seconds
+export const SAVE_INTERVAL = 5 * 60; // 5 minutes in seconds
+export const MAX_TORRENTS = 200;
