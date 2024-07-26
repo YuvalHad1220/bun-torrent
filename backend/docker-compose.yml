@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "2051:8080"
+    environment:
+      - REMOTE_DB=mongodb://localhost:27017/
+      - HTTP_PROXY=socks5h://tor-proxy:9050
+      - HTTPS_PROXY=socks5h://tor-proxy:9050
+    restart: always

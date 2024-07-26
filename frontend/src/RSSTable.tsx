@@ -27,7 +27,7 @@ const RSSTable = () => {
     });
 
     const { isLoading, data } = useQuery<iRSS[]>('rssData', () =>
-        fetch(`http://localhost:8080/api/rss/`).then(res =>
+        fetch(`http://localhost:2051/api/rss/`).then(res =>
             res.json()
         ),
         { refetchInterval: 4 * 1000 }

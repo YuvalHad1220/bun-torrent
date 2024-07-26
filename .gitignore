@@ -1,7 +1,6 @@
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
 
 # Logs
-
 logs
 _.log
 npm-debug.log_
@@ -167,5 +166,4 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.\*
-backend/bun.lockb
 backend/bun.lockb
