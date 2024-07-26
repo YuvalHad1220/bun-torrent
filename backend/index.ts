@@ -10,9 +10,8 @@ import executeTasksWithDelay from "./Functions/TasksWithDelay";
 import rssGroup from "./routes/RSS";
 import { RSSLoop } from "./Functions/RSSHandler";
 
-
-const TIME_TO_TIMEOUT = 8000
-const TIME_BETWEEN_LOOPS = 30000
+const TIME_TO_TIMEOUT = 8000;
+const TIME_BETWEEN_LOOPS = 30000;
 const torrentLoop = async (db: iDatabaseHandler) => {
   const torrents = await db.getTorrents();
   const clients = await db.getClients();
@@ -23,11 +22,13 @@ const torrentLoop = async (db: iDatabaseHandler) => {
     torrentQueueToSave,
   } = announceLoop(torrents, clients);
   calculationLoop(clients, torrents);
-  console.log("tasks to announce:", torrentTasksToAnnounce.length);
-  await executeTasksWithDelay(torrentTasksToAnnounce, TIME_TO_TIMEOUT);
+  if (torrentTasksToAnnounce.length) {
+    console.log("tasks to announce:", torrentTasksToAnnounce.length);
+    await executeTasksWithDelay(torrentTasksToAnnounce, TIME_TO_TIMEOUT);
+  }
 
-  console.log("tasks to save:", announcedTorrentsToSave.size);
   if (announcedTorrentsToSave.size > 0) {
+    console.log("tasks to save:", announcedTorrentsToSave.size);
     await db.updateTorrents(announcedTorrentsToSave);
     announcedTorrentsToSave.clear();
   }
@@ -36,7 +37,6 @@ const torrentLoop = async (db: iDatabaseHandler) => {
   if (torrentQueueToSave.size > 0) {
     await db.updateTorrents(torrentQueueToSave);
   }
-  return announcedTorrentsToSave ? TIME_TO_TIMEOUT : 0;
 };
 
 const main = async () => {
@@ -53,16 +53,18 @@ const main = async () => {
   let counter = 0;
   // we sleep 30 seconds every time so if counter is at 30 that means we slept for 900 seconds, which is 15 minutes
   while (true) {
-    let timeAlreadyWaited = await torrentLoop(db);
+    const start = Date.now();
+    await torrentLoop(db);
     if (counter % 10 === 0) {
       const RSSs = await db.getRSSs();
-      const loop_time = await RSSLoop(RSSs, db);
-      console.log("RSS time: " + loop_time);
+      await RSSLoop(RSSs, db);
       counter = 0;
-      timeAlreadyWaited += loop_time;
     }
     counter++;
-    await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_LOOPS - timeAlreadyWaited)); // do that once every 30 seconds less the timeout time
+    const end = Date.now();
+    await new Promise((resolve) =>
+      setTimeout(resolve, TIME_BETWEEN_LOOPS - (end - start))
+    ); // do that once every 30 seconds less the timeout time
   }
 };
 

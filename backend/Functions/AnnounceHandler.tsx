@@ -108,6 +108,7 @@ const announceSaveAdapter = async (
     client
   );
   if (announceResult) {
+    console.log("announce success")
     announcedTorrentsToSave.add(torrent);
   }
   return announceResult;
@@ -131,8 +132,6 @@ export const announceLoop = (torrents: iTorrent[], clients: iClient[]) => {
 
   const clientsRecord = groupBy(clients, "_id");
   const failed = torrents.filter(item => Boolean(item.failureCount && item.failureCount >= MIN_FAIL_THRES && item.failureCount <= MAX_FAIL_THRES)).length;
-  console.log({failed})
-
   for (let torrent of torrents) {
     if (
       torrent.failureCount &&
@@ -144,7 +143,7 @@ export const announceLoop = (torrents: iTorrent[], clients: iClient[]) => {
     }
 
     const client =
-      torrent.clientId && clientsRecord[torrent.clientId!.toString()];
+      torrent.clientId && clientsRecord[torrent.clientId!.toString()][0];
     if (!client) continue;
 
     // Start announce

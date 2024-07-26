@@ -28,13 +28,14 @@ const TorrentForm = () => {
         register,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors },
     } = useForm<FormData>({
         defaultValues: {
             uploadSpeed: 0,
-            uploadSpeedUnit: "MBs",
+            uploadSpeedUnit: "Bs",
             downloadSpeed: 2, // 125KBs
-            downloadSpeedUnit: "Bs",
+            downloadSpeedUnit: "MBs",
             progress: 0,
             clientName: clients.length ? clients[0].name : ""
         }
@@ -57,7 +58,13 @@ const TorrentForm = () => {
     }
 
     useEffect(() => {
-        getClients().then(setClients);
+        getClients().then((clients) => {
+            if (clients.length){
+                setClients(clients)
+                setValue("clientName", clients[0].name)
+            }
+        });
+        
     }, []);
 
     return (
@@ -77,24 +84,10 @@ const TorrentForm = () => {
                 </select>
 
                 <label className="label">
-                    <span className="label-text font-semibold">Upload speed</span>
-                </label>
-                <div className="flex">
-                    <input type="number" className="input input-bordered" {...register('uploadSpeed', { required: 'Upload speed is required', min: 0 })} placeholder="Upload Speed" />
-                    <select {...register('uploadSpeedUnit', { required: true })} className="select select-bordered">
-                        <option value="bytes">Bs</option>
-                        <option value="kilobytes">KBs</option>
-                        <option value="megabytes">MBs</option>
-                        <option value="gigabytes">GBs</option>
-                    </select>
-                </div>
-                {errors.uploadSpeed && <span className="text-red-500">{errors.uploadSpeed.message}</span>}
-
-                <label className="label">
                     <span className="label-text font-semibold">Download speed</span>
                 </label>
                 <div className="flex">
-                    <input type="number" className="input input-bordered" {...register('downloadSpeed', { required: 'Download speed is required', min: 100 })} placeholder="Download Speed" />
+                    <input type="number" className="input input-bordered" {...register('downloadSpeed', { required: 'Download speed is required' })} placeholder="Download Speed" />
                     <select {...register('downloadSpeedUnit', { required: true })} className="select select-bordered">
                         <option value="Bs">Bs</option>
                         <option value="KBs">KBs</option>
@@ -103,6 +96,20 @@ const TorrentForm = () => {
                     </select>
                 </div>
                 {errors.downloadSpeed && <span className="text-red-500">{errors.downloadSpeed.message}</span>}
+
+                <label className="label">
+                    <span className="label-text font-semibold">Upload speed</span>
+                </label>
+                <div className="flex">
+                    <input type="number" className="input input-bordered" {...register('uploadSpeed', { required: 'Upload speed is required' })} placeholder="Upload Speed" />
+                    <select {...register('uploadSpeedUnit', { required: true })} className="select select-bordered">
+                        <option value="Bs">Bs</option>
+                        <option value="KBs">KBs</option>
+                        <option value="MBs">MBs</option>
+                        <option value="GBs">GBs</option>
+                    </select>
+                </div>
+                {errors.uploadSpeed && <span className="text-red-500">{errors.uploadSpeed.message}</span>}
 
                 <label className="label">
                     <span className="label-text font-semibold">Progress (in percentages)</span>

@@ -41,11 +41,18 @@ const handleClientTorrents = (
     (acc, torrent) => acc + torrent.uploaded,
     0
   );
-  console.log(
-    totalTorrentSize > client.maxDownloadableSize,
-    (100 * totalTorrentSize) / (client.maxDownloadableSize || 1),
-    client.name
-  );
+  // console.log(
+  //   totalTorrentSize > client.maxDownloadableSize,
+  //   (100 * totalTorrentSize) / (client.maxDownloadableSize || 1),
+  //   client.name
+  // );
+  // Sort torrents to prioritize by amount downloaded and number of seeders
+  torrentsOfClient.sort((a, b) => {
+    if (a.downloaded !== b.downloaded) {
+      return b.downloaded - a.downloaded;
+    }
+    return b.seeders - a.seeders;
+  });
 
   const canUploadBySize =
     !client.maxUploadSize || client.maxUploadSize >= totalUploadedSizeForClient;
@@ -58,7 +65,7 @@ const handleClientTorrents = (
     let downloadable = 0;
     let uploadable = 0;
     const isInDownloadProcess =
-      !torrent.isFinishAnnounced && torrent.isStartAnnounced;
+      !torrent.isFinishAnnounced && torrent.downloaded > 0;
 
     // if (canDownloadBySize && canDownloadByRatio) {
     if (isInDownloadProcess || canDownloadBySize) {

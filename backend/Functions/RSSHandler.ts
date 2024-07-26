@@ -45,7 +45,6 @@ export const handleRss = async (rss: iRSS, db: iDatabaseHandler) => {
     );
 
   if (client.maxDownloadableSize && client.maxDownloadableSize <= totalTorrentSize){
-    console.log("cant download more RSSes!")
     return
   }
 
