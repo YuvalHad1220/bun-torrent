@@ -1,7 +1,7 @@
 import { iClient, iClientSummarized, iGithubClientList, iRSS} from "../../interfaces";
 export const getClients = async (): Promise<iClient[]> => {
     try {
-        const response = await fetch('/api/client/', {
+        const response = await fetch('http://localhost:2051/api/client/', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ export const getClients = async (): Promise<iClient[]> => {
 }
 export const getClientsSummarized = async (): Promise<iClientSummarized[]> => {
   try {
-      const response = await fetch('/api/client/summarized', {
+      const response = await fetch('http://localhost:2051/api/client/summarized', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ export const getClientsSummarized = async (): Promise<iClientSummarized[]> => {
 }
 export const postClient = async (client: iClient): Promise<boolean> => {
     try {
-        const response = await fetch('/api/client/', {
+        const response = await fetch('http://localhost:2051/api/client/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export const postClient = async (client: iClient): Promise<boolean> => {
 }
 export const postRss = async (rss: iRSS): Promise<boolean> => {
   try {
-      const response = await fetch('/api/rss/', {
+      const response = await fetch('http://localhost:2051/api/rss/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ export const postTorrents = async (files: FileList, maxDownloadSpeedInBytes: num
     
         console.log(formData.entries());
         // Send the request
-        const response = await fetch('/api/torrent/', {
+        const response = await fetch('http://localhost:2051/api/torrent/', {
           method: 'POST',
           body: formData,
         //   headers: {
@@ -100,7 +100,7 @@ export const postTorrents = async (files: FileList, maxDownloadSpeedInBytes: num
 
 export const getGithubClients = async (): Promise<iGithubClientList[]> => {
   try {
-    const response = await fetch("/api/client/fromGithub", {
+    const response = await fetch("http://localhost:2051/api/client/fromGithub", {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

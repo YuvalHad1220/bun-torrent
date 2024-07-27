@@ -9,7 +9,7 @@ import { calculationLoop } from "./Functions/calculationLoop";
 import executeTasksWithDelay from "./Functions/TasksWithDelay";
 import rssGroup from "./routes/RSS";
 import { RSSLoop } from "./Functions/RSSHandler";
-
+import whoAmI from "./Functions/whoami";
 const TIME_TO_TIMEOUT = 8000;
 const TIME_BETWEEN_LOOPS = 30000;
 const torrentLoop = async (db: iDatabaseHandler) => {
@@ -40,6 +40,7 @@ const torrentLoop = async (db: iDatabaseHandler) => {
 };
 
 const main = async () => {
+  await whoAmI()
   const db = await DatabaseHandler(process.env.REMOTE_DB!);
   // const app = new Elysia().decorate("dbHandler", db);
   const app = new Elysia();
